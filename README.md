@@ -193,8 +193,7 @@ ros2 run robot_math_utils robot_math_utils_test
 
 ## Contact
 
-- **Author**: Wei-Hsuan Cheng
-- **Email**: [johnathancheng0125@gmail.com](mailto:johnathancheng0125@gmail.com)
+- **Author**: Wei-Hsuan Cheng [(johnathancheng0125@gmail.com)](mailto:johnathancheng0125@gmail.com)
 - **GitHub**: [wei-hsuan-cheng](https://github.com/wei-hsuan-cheng)
 
 
