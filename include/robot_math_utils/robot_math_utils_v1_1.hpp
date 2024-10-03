@@ -597,6 +597,7 @@ public:
         return pos_quat_1_2;
     }
 
+    // Core conversions (quaternions to others)
     // pos_quat <-> pos_so3
     static Eigen::VectorXd PosQuat2Posso3(const Eigen::VectorXd& pos_quat_1_2) {
         if (pos_quat_1_2.size() != 7) {
@@ -637,6 +638,7 @@ public:
     }
 
     // Other conversions
+    // rot_pos <-> SE(3) matrix
     static Eigen::Matrix4d RotPos2SE3(const Eigen::Matrix3d& R_1_2, const Eigen::Vector3d& p_1_2) {
         Eigen::Matrix4d T_1_2 = Eigen::Matrix4d::Identity();
         T_1_2.topLeftCorner<3, 3>() = R_1_2;
@@ -650,6 +652,7 @@ public:
         return std::make_pair(R_1_2, p_1_2);
     }
 
+    // r6_pose <-> SE(3) matrix
     static Eigen::Matrix4d R6Pose2SE3(const Eigen::VectorXd& pose_1_2) {
         return PosQuat2SE3( R6Pose2PosQuat(pose_1_2) );
     }
@@ -664,6 +667,7 @@ public:
         return Inv(T_b_1) * T_b_2; // T_1_2
     }
 
+    // r6_pose <-> rot_pos
     static std::pair<Eigen::Matrix3d, Eigen::Vector3d> R6Pose2RotPos(const Eigen::VectorXd& pose_1_2) {
         Eigen::Matrix4d T_1_2 = R6Pose2SE3(pose_1_2);
         Eigen::Matrix3d R_1_2 = T_1_2.topLeftCorner<3, 3>();
@@ -682,6 +686,7 @@ public:
         return std::make_pair(R_1_2, p_1_2);
     }
 
+    // SE3 matrix <-> pos_so3
     static Eigen::VectorXd SE32Posso3(const Eigen::Matrix4d& T_1_2) {
         return PosQuat2Posso3( SE32PosQuat(T_1_2) );
     }
@@ -731,7 +736,7 @@ public:
         return pos_quat_init_final; 
     }
 
-    // Pause here (not tested yet)
+    // Pause here 241003 (not tested yet)
     static Eigen::VectorXd PosQuats2RelativePosQuat(const Eigen::VectorXd& pos_quat_b_1, const Eigen::VectorXd& pos_quat_b_2) {
         if (pos_quat_b_1.size() != 7 || pos_quat_b_2.size() != 7) {
             throw std::invalid_argument("Each pose must have exactly 7 elements.");
@@ -803,7 +808,6 @@ public:
     static Eigen::VectorXd PosQuatOutlierRemoval(const Eigen::VectorXd &current_pos_quat, double std_thresh, std::deque<Eigen::VectorXd> &buffer, std::size_t window_size) {
         // Convert pos_quat to pos_so3
         Eigen::VectorXd current_pos_so3 = PosQuat2Posso3(current_pos_quat);
-
         // Check if buffer has enough data
         if (buffer.size() < window_size) {
             // Not enough data, accept current_pos_quat
@@ -859,6 +863,7 @@ public:
         return std::make_pair(twist_cmd, target_reached);
     }
 
+    // S-curve smoothing
     static Eigen::VectorXd SCurve(const Eigen::VectorXd &twist_cmd, const Eigen::VectorXd &twist_cmd_prev, double k, double t, double T)
     {   
         // twist_cmd: cmd
@@ -875,6 +880,7 @@ public:
         return twist_cmd_prev + (twist_cmd - twist_cmd_prev) / (1 + exp( -k * (t - T / 2.0) ));
     }
     
+    // Cartesian position control
     static Eigen::VectorXd KpPosso3(const Eigen::VectorXd& pos_so3_m_cmd, const Eigen::MatrixXd& kp_pos_so3, bool target_reached) {
         if (pos_so3_m_cmd.size() != 6) {
             throw std::invalid_argument("The input pose_error must have exactly 6 elements.");
@@ -886,19 +892,19 @@ public:
         return twist_cmd;
     }
 
-    static Eigen::MatrixXd KpIBVSCircle2(const Eigen::Vector3d& circle_d, const Eigen::Vector3d& circle_o, double z_d, double z_est, const Eigen::Matrix3d& kp_ibvs, bool target_reached, Eigen::VectorXd& circle_error, Eigen::VectorXd& pos_error, double& error_norm) {
-        pos_error = (Eigen::Vector3d() << circle_o.head<2>() - circle_d.head<2>(), z_est - z_d).finished();
-        circle_error = circle_d - circle_o;
-        error_norm = pos_error(2); // Assuming the third component is the error norm in this context
+    // static Eigen::MatrixXd KpIBVSCircle2(const Eigen::Vector3d& circle_d, const Eigen::Vector3d& circle_o, double z_d, double z_est, const Eigen::Matrix3d& kp_ibvs, bool target_reached, Eigen::VectorXd& circle_error, Eigen::VectorXd& pos_error, double& error_norm) {
+    //     pos_error = (Eigen::Vector3d() << circle_o.head<2>() - circle_d.head<2>(), z_est - z_d).finished();
+    //     circle_error = circle_d - circle_o;
+    //     error_norm = pos_error(2); // Assuming the third component is the error norm in this context
 
-        if (target_reached) {
-            circle_error.setZero();
-        }
+    //     if (target_reached) {
+    //         circle_error.setZero();
+    //     }
 
-        Eigen::MatrixXd e_twist_cmd = Eigen::MatrixXd::Zero(6, 1);
-        e_twist_cmd.topLeftCorner<3, 1>() = kp_ibvs * pos_error;
-        return e_twist_cmd;
-    }
+    //     Eigen::MatrixXd e_twist_cmd = Eigen::MatrixXd::Zero(6, 1);
+    //     e_twist_cmd.topLeftCorner<3, 1>() = kp_ibvs * pos_error;
+    //     return e_twist_cmd;
+    // }
 
 };
 

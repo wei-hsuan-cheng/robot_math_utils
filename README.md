@@ -93,7 +93,7 @@ cd ~/ros2_ws && rosdep update && rosdep install --from-paths src --ignore-src -r
 cd ~/ros2_ws && colcon build --packages-select robot_math_utils && . install/setup.bash
 ```
 
-Run the ROS 2 node for test
+Run the ROS 2 node for test:
 ```bash
 cd ~/ros2_ws && . install/setup.bash
 ros2 run robot_math_utils robot_math_utils_test
@@ -185,7 +185,6 @@ ros2 run robot_math_utils robot_math_utils_test
 - `ErrorThreshold`: Check if the error is within a threshold.
 - `SCurve`: Generate an S-curve for smooth command transitions.
 - `KpPosso3`: Compute a proportional control command.
-- `KpIBVSCircle2`: Compute a control command for image-based visual servoing.
   
 ## Acknowledgements
 
