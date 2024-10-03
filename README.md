@@ -88,7 +88,7 @@ Clone this repo into your ROS 2 workspace, install dependencies, and build pkg:
 ```bash
 cd ~/ros2_ws/src && git clone https://github.com/your_username/robot_math_utils.git
 
-cd ~/ros2_ws && rosdep install --from-paths src --ignore-src -r -y
+cd ~/ros2_ws && rosdep update && rosdep install --from-paths src --ignore-src -r -y
 
 cd ~/ros2_ws && colcon build --packages-select robot_math_utils && . install/setup.bash
 ```
