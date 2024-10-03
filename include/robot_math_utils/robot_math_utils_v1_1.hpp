@@ -410,6 +410,7 @@ public:
         return so32Quat( Rot2so3(R) );
     }
 
+    // ZYX Euler angles
     static Eigen::Matrix3d Rotx(double thx, bool rad = true) {
         if (!rad) {
             thx *= M_PI / 180.0;
@@ -507,6 +508,7 @@ public:
 
 
     // SE(3) and se(3) functions
+    // Exp and Log maps in SE(3)
     static Eigen::MatrixXd R6Vec2se3Mat(const Eigen::VectorXd& V) {
 		// linear and angular parts
 		Eigen::Vector3d linear(V(0), V(1), V(2));
@@ -535,7 +537,6 @@ public:
 		return v_ret;
 	}
 
-    // Exp and Log maps in SE(3)
     static Eigen::MatrixXd MatrixExp6(const Eigen::MatrixXd& se3Mat) {
 		// Extract the angular velocity vector from the transformation matrix
 		Eigen::Matrix3d se3Mat_cut = se3Mat.block<3, 3>(0, 0);
