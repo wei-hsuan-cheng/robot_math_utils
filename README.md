@@ -37,7 +37,8 @@ A C++ maths library for robotics applications, providing a collection of utility
 - **Eigen Library Integration**: Built on top of the Eigen library for linear algebra operations.
   
 ### Under development
-- **Kinematics**: D-H parameters, forward and inverse kinematics are still under development.
+- **Kinematics**: D-H parameters, forward and inverse kinematics, etc.
+- **Motion Planning**: Screw motions, etc.
 
 ## Installation
 
