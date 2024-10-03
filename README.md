@@ -23,6 +23,8 @@ A C++ maths library for robotics applications, providing a collection of utility
       - [Pose Conversions](#pose-conversions)
     - [Pose Preprocessing](#pose-preprocessing)
     - [Robot Controller Functions](#robot-controller-functions)
+  - [Acknowledgements](#acknowledgements)
+  - [Contact](#contact)
 
 ## Features
 
@@ -184,4 +186,16 @@ ros2 run robot_math_utils robot_math_utils_test
 - `SCurve`: Generate an S-curve for smooth command transitions.
 - `KpPosso3`: Compute a proportional control command.
 - `KpIBVSCircle2`: Compute a control command for image-based visual servoing.
+  
+## Acknowledgements
+
+- **Modern Robotics**: Some functions are adapted from the [Modern Robotics book codebase](https://github.com/Le0nX/ModernRoboticsCpp).
+- **Eigen Library**: This library heavily relies on the Eigen library for linear algebra operations.
+
+## Contact
+
+- **Author**: Wei-Hsuan Cheng
+- **Email**: [johnathancheng0125@gmail.com](mailto:johnathancheng0125@gmail.com)
+- **GitHub**: [wei-hsuan-cheng](https://github.com/wei-hsuan-cheng)
+
 
