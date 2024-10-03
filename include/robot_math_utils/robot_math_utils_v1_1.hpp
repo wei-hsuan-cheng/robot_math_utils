@@ -159,7 +159,7 @@ public:
         return angle;
     }
 
-    static double random_normal(double mean = 0.0, double stddev = 1.0) { // random normal function
+    static double RandNorDist(double mean = 0.0, double stddev = 1.0) { // random normal function
         static std::mt19937 rng(std::random_device{}()); // Standard mersenne_twister_engine
         std::normal_distribution<double> dist(mean, stddev);
         return dist(rng);

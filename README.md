@@ -127,7 +127,7 @@ ros2 run robot_math_utils robot_math_utils_test
 - `Det`: Compute the determinant of a matrix.
 - `Tr`: Compute the trace of a matrix.
 - `ConstrainedAngle`: Constrain an angle within a range.
-- `random_normal`: Generate a random number from a normal distribution.
+- `RandNorDist`: Generate a random number from a normal distribution.
 
 ### Robot Transformation Functions
 
