@@ -20,27 +20,44 @@ int main(int argc, char** argv) {
     double r2d = 180.0 / M_PI;
     double d2r = M_PI / 180.0;
 
-    // Test transform multiple pos_quats
-    std::cout << "\n----- Test transform multiple pos_quats -----\n" << std::endl;
-    VectorXd pos_quat_1_2(7), pos_quat_2_3(7), pos_quat_3_4(7);
-    VectorXd temp_vec1(6);
-    temp_vec1 << 0.0, 0.0, 0.0, 0.0, 0.0, 0.5;
-    pos_quat_1_2 = RM::R6Pose2PosQuat(temp_vec1);
+    // Test Euler angles (from quat to rot and convert back to zyx_euler)
+    std::cout << "\n----- Test Euler angles -----\n" << std::endl;
+    Vector3d zyx_euler(30, 15, 45);
+    Matrix3d Rotzyx = RM::Rotzyx(zyx_euler * d2r);
+    Vector4d quat = RM::zyxEuler2Quat(zyx_euler * d2r);
 
-    VectorXd temp_vec2(6);
-    temp_vec2 << 0.0, 0.0, 0.0, 0.0, 0.6, 0.0;
-    pos_quat_2_3 = RM::R6Pose2PosQuat(temp_vec2);
+    Vector3d zyx_euler_from_Rot = RM::Rot2zyxEuler(Rotzyx) * r2d;
+    Vector3d zyx_euler_from_quat = RM::Quat2zyxEuler(quat) * r2d;
+    std::cout << "zyx_euler [deg] = [" << zyx_euler.transpose() << "]" << std::endl;
+    std::cout << "zyx_euler_from_Rot [deg] = [" << zyx_euler_from_Rot.transpose() << "]" << std::endl;
+    std::cout << "zyx_euler_from_quat [deg] = [" << zyx_euler_from_quat.transpose() << "]" << std::endl;
 
-    VectorXd temp_vec3(6);
-    temp_vec3 << 0.0, 0.0, 0.0, 0.7, 0.0, 0.0;
-    pos_quat_3_4 = RM::R6Pose2PosQuat(temp_vec3);
 
-    VectorXd result_pos_quat = RM::TransformPosQuats({pos_quat_1_2, pos_quat_2_3, pos_quat_3_4});
-    VectorXd result_pose = RM::PosQuat2R6Pose(result_pos_quat);
+
+
+
+
+    // // Test transform multiple pos_quats
+    // std::cout << "\n----- Test transform multiple pos_quats -----\n" << std::endl;
+    // VectorXd pos_quat_1_2(7), pos_quat_2_3(7), pos_quat_3_4(7);
+    // VectorXd temp_vec1(6);
+    // temp_vec1 << 0.0, 0.0, 0.0, 0.0, 0.0, 0.5;
+    // pos_quat_1_2 = RM::R6Pose2PosQuat(temp_vec1);
+
+    // VectorXd temp_vec2(6);
+    // temp_vec2 << 0.0, 0.0, 0.0, 0.0, 0.6, 0.0;
+    // pos_quat_2_3 = RM::R6Pose2PosQuat(temp_vec2);
+
+    // VectorXd temp_vec3(6);
+    // temp_vec3 << 0.0, 0.0, 0.0, 0.7, 0.0, 0.0;
+    // pos_quat_3_4 = RM::R6Pose2PosQuat(temp_vec3);
+
+    // VectorXd result_pos_quat = RM::TransformPosQuats({pos_quat_1_2, pos_quat_2_3, pos_quat_3_4});
+    // VectorXd result_pose = RM::PosQuat2R6Pose(result_pos_quat);
     
-    RCLCPP_INFO(node->get_logger(), "\npose_1_4 [%f, %f, %f, %f, %f, %f]\n", 
-                result_pose(0), result_pose(1), result_pose(2),
-                result_pose(3), result_pose(4), result_pose(5));
+    // RCLCPP_INFO(node->get_logger(), "\npose_1_4 [%f, %f, %f, %f, %f, %f]\n", 
+    //             result_pose(0), result_pose(1), result_pose(2),
+    //             result_pose(3), result_pose(4), result_pose(5));
     
     // // Test InvPosQuat
     // std::cout << "\n----- Test InvPosQuat -----\n" << std::endl;
@@ -48,10 +65,10 @@ int main(int argc, char** argv) {
     // VectorXd pose_2_1 = RM::PosQuat2R6Pose(pos_quat_2_1);
     // std::cout << "\npose_2_1 = [" << pose_2_1.transpose() << "]" << std::endl;
 
-    // Test InvR6Pose
-    std::cout << "\n----- Test InvR6Pose -----\n" << std::endl;
-    VectorXd pose_2_1 = RM::InvR6Pose(temp_vec1);
-    std::cout << "\npose_2_1 = [" << pose_2_1.transpose() << "]" << std::endl;
+    // // Test InvR6Pose
+    // std::cout << "\n----- Test InvR6Pose -----\n" << std::endl;
+    // VectorXd pose_2_1 = RM::InvR6Pose(temp_vec1);
+    // std::cout << "\npose_2_1 = [" << pose_2_1.transpose() << "]" << std::endl;
 
 
 

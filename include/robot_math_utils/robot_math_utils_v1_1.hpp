@@ -376,37 +376,34 @@ public:
 		}
 	}
     
+    // Rotation matrices
+    static Eigen::Matrix3d ThreeAxes2Rot(const Eigen::Vector3d& x_1_2, const Eigen::Vector3d& y_1_2, const Eigen::Vector3d& z_1_2) {
+        Eigen::Matrix3d R_1_2;
+        R_1_2.col(0) = x_1_2;
+        R_1_2.col(1) = y_1_2;
+        R_1_2.col(2) = z_1_2;
+        return R_1_2;
+    }
+
     static Eigen::Matrix3d Rotx(double thx, bool rad = true) {
         if (!rad) {
             thx *= M_PI / 180.0;
         }
-        Eigen::Matrix3d Rx;
-        Rx << 1, 0,        0,
-              0, cos(thx), -sin(thx),
-              0, sin(thx), cos(thx);
-        return Rx;
+        return so32Rot(Eigen::Vector3d(thx, 0, 0));
     }
 
     static Eigen::Matrix3d Roty(double thy, bool rad = true) {
         if (!rad) {
             thy *= M_PI / 180.0;
         }
-        Eigen::Matrix3d Ry;
-        Ry << cos(thy),  0, sin(thy),
-              0,         1, 0,
-             -sin(thy), 0, cos(thy);
-        return Ry;
+        return so32Rot(Eigen::Vector3d(0, thy, 0));
     }
 
     static Eigen::Matrix3d Rotz(double thz, bool rad = true) {
         if (!rad) {
             thz *= M_PI / 180.0;
         }
-        Eigen::Matrix3d Rz;
-        Rz << cos(thz), -sin(thz), 0,
-              sin(thz), cos(thz),  0,
-              0,       0,         1;
-        return Rz;
+        return so32Rot(Eigen::Vector3d(0, 0, thz));
     }
 
     static Eigen::Matrix3d Rotxyz(const Eigen::Vector3d& thxyz, bool rad = true) {
@@ -434,14 +431,6 @@ public:
             thz *= 180.0 / M_PI;
         }
         return Eigen::Vector3d(thz, thy, thx);
-    }
-
-    static Eigen::Matrix3d ThreeAxes2Rot(const Eigen::Vector3d& x_1_2, const Eigen::Vector3d& y_1_2, const Eigen::Vector3d& z_1_2) {
-        Eigen::Matrix3d R_1_2;
-        R_1_2.col(0) = x_1_2;
-        R_1_2.col(1) = y_1_2;
-        R_1_2.col(2) = z_1_2;
-        return R_1_2;
     }
 
     static Eigen::Vector3d Rot2so3(const Eigen::Matrix3d& R) {
@@ -481,6 +470,13 @@ public:
         return so32Quat(Eigen::Vector3d(0, 0, thz));
     }
 
+    static Eigen::Vector4d xyzEuler2Quat(const Eigen::Vector3d& xyz_euler, bool rad = true) {
+        Eigen::Vector4d qx = Quatx(xyz_euler(0), rad);
+        Eigen::Vector4d qy = Quaty(xyz_euler(1), rad);
+        Eigen::Vector4d qz = Quatz(xyz_euler(2), rad);
+        return TransformQuats({qx, qy, qz});
+    }
+    
     static Eigen::Vector4d zyxEuler2Quat(const Eigen::Vector3d& zyx_euler, bool rad = true) {
         Eigen::Vector4d qz = Quatz(zyx_euler(0), rad);
         Eigen::Vector4d qy = Quaty(zyx_euler(1), rad);
