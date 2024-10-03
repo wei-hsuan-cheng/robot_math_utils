@@ -31,8 +31,8 @@ A C++ maths library for robotics applications, providing a collection of utility
 - **Data Logging**: Functions to initialise and log data to CSV files.
 - **Numerical Computations**: Utilities for near-zero checks, moving averages, and statistical calculations.
 - **Maths Utilities**: Basic mathematical functions, including error percentage, normalisation, and random number generation.
-- **Robot Transformations**: Functions for homogeneous coordinates, rotations, quaternions, and pose transformations.
-- **Kinematics**: Implementations of exponential and logarithmic mappings for rotations and transformations.
+- **Robot Transformations**: Functions for homogeneous coordinates, SO(3) rotations, quaternions, and SE(3) pose transformations.
+- **Exp and Log Maps**: Implementations of exponential and logarithmic mappings for SO(3) rotations and SE(3) transformations.
 - **Control Functions**: Utilities for error thresholds, S-curve generation, and proportional controller.
 - **Eigen Library Integration**: Built on top of the Eigen library for linear algebra operations.
   
