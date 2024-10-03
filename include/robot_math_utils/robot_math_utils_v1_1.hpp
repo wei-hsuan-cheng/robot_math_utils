@@ -273,6 +273,40 @@ public:
     
 
     // SO(3) and so(3) functions (quaterions as main representation)
+    // Quaternion operations
+    static Eigen::Vector4d QuatMul(const Eigen::Vector4d& q, const Eigen::Vector4d& p) {
+        Eigen::Vector4d qp;
+        qp(0) = q(0) * p(0) - q.tail<3>().dot(p.tail<3>()); 
+        qp.tail<3>() = q(0) * p.tail<3>() + p(0) * q.tail<3>() + q.tail<3>().cross(p.tail<3>());
+        return qp;
+    }
+
+    static Eigen::Vector4d ConjQuat(const Eigen::Vector4d& quat) {
+        if (quat.size() != 4) {
+            throw std::invalid_argument("The input quaternion must have exactly 4 elements.");
+        }
+        return Eigen::Vector4d(quat(0), -quat(1), -quat(2), -quat(3));
+    }
+
+    static Eigen::Vector4d InvQuat(const Eigen::Vector4d& quat) {
+        if (quat.size() != 4) {
+            throw std::invalid_argument("The input quaternion must have exactly 4 elements.");
+        }
+        return ConjQuat(quat) / ( QuatMul(quat, ConjQuat(quat))(0) );
+    }
+
+    static Eigen::Vector4d TransformQuats(const std::vector<Eigen::Vector4d>& quats) {
+        if (quats.size() == 0) {
+            throw std::invalid_argument("The input list of quaternions is empty.");
+        }
+        Eigen::Vector4d quat_init_final = quats[0];
+        for (size_t i = 1; i < quats.size(); ++i) {
+            quat_init_final = QuatMul(quat_init_final, quats[i]);
+        }
+        return quat_init_final;
+    }
+
+    // Exp and Log maps in SO(3)
     static Eigen::Matrix3d R3Vec2so3Mat(const Eigen::Vector3d& v) {
         Eigen::Matrix3d so3Mat;
         so3Mat <<  0,      -v(2),   v(1),
@@ -299,13 +333,6 @@ public:
 		return v; // {uhat_x, uhat_y, uhat_z, theta}
 	}
 
-    static Eigen::Vector4d so32Quat(const Eigen::Vector3d& so3) {
-        Eigen::Vector4d v;
-        Eigen::Vector4d axis_ang = AxisAng3(so3);
-        v << std::cos(axis_ang(3) / 2), std::sin(axis_ang(3) / 2) * axis_ang.head(3);
-        return v;
-    }
-
     static Eigen::Vector3d Quat2so3(const Eigen::Vector4d& quat) {
         if (quat.size() != 4) {
             throw std::invalid_argument("The input quaternion must have exactly 4 elements.");
@@ -314,29 +341,11 @@ public:
         return (2 / Sinc(theta / 2)) * quat.tail(3);
     }
 
-    static Eigen::Vector4d InvQuat(const Eigen::Vector4d& quat) {
-        if (quat.size() != 4) {
-            throw std::invalid_argument("The input quaternion must have exactly 4 elements.");
-        }
-        return Eigen::Vector4d(quat(0), -quat(1), -quat(2), -quat(3));
-    }
-
-    static Eigen::Vector4d QuatMul(const Eigen::Vector4d& q, const Eigen::Vector4d& p) {
-        Eigen::Vector4d qp;
-        qp(0) = q(0) * p(0) - q.tail<3>().dot(p.tail<3>()); 
-        qp.tail<3>() = q(0) * p.tail<3>() + p(0) * q.tail<3>() + q.tail<3>().cross(p.tail<3>());
-        return qp;
-    }
-
-    static Eigen::Vector4d TransformQuats(const std::vector<Eigen::Vector4d>& quats) {
-        if (quats.size() == 0) {
-            throw std::invalid_argument("The input list of quaternions is empty.");
-        }
-        Eigen::Vector4d quat_init_final = quats[0];
-        for (size_t i = 1; i < quats.size(); ++i) {
-            quat_init_final = QuatMul(quat_init_final, quats[i]);
-        }
-        return quat_init_final;
+    static Eigen::Vector4d so32Quat(const Eigen::Vector3d& so3) {
+        Eigen::Vector4d v;
+        Eigen::Vector4d axis_ang = AxisAng3(so3);
+        v << std::cos(axis_ang(3) / 2), std::sin(axis_ang(3) / 2) * axis_ang.head(3);
+        return v;
     }
     
     static Eigen::Matrix3d MatrixExp3(const Eigen::Matrix3d& so3Mat) {
@@ -385,6 +394,22 @@ public:
         return R_1_2;
     }
 
+    static Eigen::Matrix3d so32Rot(const Eigen::Vector3d& so3) {
+        return MatrixExp3( R3Vec2so3Mat(so3) );
+    }
+
+    static Eigen::Vector3d Rot2so3(const Eigen::Matrix3d& R) {
+        return so3Mat2R3Vec( MatrixLog3(R) );
+    }
+
+    static Eigen::Matrix3d Quat2Rot(const Eigen::Vector4d& quat) {
+        return so32Rot( Quat2so3(quat) );
+    }
+
+    static Eigen::Vector4d Rot2Quat(const Eigen::Matrix3d& R) {
+        return so32Quat( Rot2so3(R) );
+    }
+
     static Eigen::Matrix3d Rotx(double thx, bool rad = true) {
         if (!rad) {
             thx *= M_PI / 180.0;
@@ -431,22 +456,6 @@ public:
             thz *= 180.0 / M_PI;
         }
         return Eigen::Vector3d(thz, thy, thx);
-    }
-
-    static Eigen::Vector3d Rot2so3(const Eigen::Matrix3d& R) {
-        return so3Mat2R3Vec( MatrixLog3(R) );
-    }
-
-    static Eigen::Matrix3d so32Rot(const Eigen::Vector3d& so3) {
-        return MatrixExp3( R3Vec2so3Mat(so3) );
-    }
-
-    static Eigen::Vector4d Rot2Quat(const Eigen::Matrix3d& R) {
-        return so32Quat( Rot2so3(R) );
-    }
-
-    static Eigen::Matrix3d Quat2Rot(const Eigen::Vector4d& quat) {
-        return so32Rot( Quat2so3(quat) );
     }
 
     static Eigen::Vector4d Quatx(double thx, bool rad = true) {
@@ -526,6 +535,7 @@ public:
 		return v_ret;
 	}
 
+    // Exp and Log maps in SE(3)
     static Eigen::MatrixXd MatrixExp6(const Eigen::MatrixXd& se3Mat) {
 		// Extract the angular velocity vector from the transformation matrix
 		Eigen::Matrix3d se3Mat_cut = se3Mat.block<3, 3>(0, 0);
@@ -572,6 +582,7 @@ public:
         return m_ret;
 	}
 
+    // Core conversions (quaternions to others)
     // pos_quat <-> r6_pose 
     static Eigen::VectorXd PosQuat2R6Pose(const Eigen::VectorXd& pos_quat_1_2) {
         if (pos_quat_1_2.size() != 7) {
@@ -593,7 +604,6 @@ public:
         return pos_quat_1_2;
     }
 
-    // Core conversions (quaternions to others)
     // pos_quat <-> pos_so3
     static Eigen::VectorXd PosQuat2Posso3(const Eigen::VectorXd& pos_quat_1_2) {
         if (pos_quat_1_2.size() != 7) {

@@ -20,17 +20,33 @@ int main(int argc, char** argv) {
     double r2d = 180.0 / M_PI;
     double d2r = M_PI / 180.0;
 
-    // Test Euler angles (from quat to rot and convert back to zyx_euler)
-    std::cout << "\n----- Test Euler angles -----\n" << std::endl;
-    Vector3d zyx_euler(30, 15, 45);
-    Matrix3d Rotzyx = RM::Rotzyx(zyx_euler * d2r);
-    Vector4d quat = RM::zyxEuler2Quat(zyx_euler * d2r);
+    // // Test Euler angles (from quat to rot and convert back to zyx_euler)
+    // std::cout << "\n----- Test Euler angles -----\n" << std::endl;
+    // Vector3d zyx_euler(30, 15, 45);
+    // Matrix3d Rotzyx = RM::Rotzyx(zyx_euler * d2r);
+    // Vector4d quat = RM::zyxEuler2Quat(zyx_euler * d2r);
 
-    Vector3d zyx_euler_from_Rot = RM::Rot2zyxEuler(Rotzyx) * r2d;
-    Vector3d zyx_euler_from_quat = RM::Quat2zyxEuler(quat) * r2d;
-    std::cout << "zyx_euler [deg] = [" << zyx_euler.transpose() << "]" << std::endl;
-    std::cout << "zyx_euler_from_Rot [deg] = [" << zyx_euler_from_Rot.transpose() << "]" << std::endl;
-    std::cout << "zyx_euler_from_quat [deg] = [" << zyx_euler_from_quat.transpose() << "]" << std::endl;
+    // Vector3d zyx_euler_from_Rot = RM::Rot2zyxEuler(Rotzyx) * r2d;
+    // Vector3d zyx_euler_from_quat = RM::Quat2zyxEuler(quat) * r2d;
+    // std::cout << "zyx_euler [deg] = [" << zyx_euler.transpose() << "]" << std::endl;
+    // std::cout << "zyx_euler_from_Rot [deg] = [" << zyx_euler_from_Rot.transpose() << "]" << std::endl;
+    // std::cout << "zyx_euler_from_quat [deg] = [" << zyx_euler_from_quat.transpose() << "]" << std::endl;
+
+    // Test inverse quaternion
+     std::cout << "\n----- Test inverse quaternion -----\n" << std::endl;
+    Vector3d zyx_euler(30, 15, 45);
+    Vector4d quat = RM::zyxEuler2Quat(zyx_euler * d2r) * 2.5;
+    Vector4d quat_conj = RM::ConjQuat(quat);
+    Vector4d quat_inv = RM::InvQuat(quat);
+    Vector4d quat_quat_conj = RM::QuatMul(quat, RM::ConjQuat(quat));
+    Vector4d quat_quat_inv = RM::QuatMul(quat, RM::InvQuat(quat));
+
+
+    std::cout << "quat = [" << quat.transpose() << "]" << std::endl;
+    std::cout << "quat_conj = [" << quat_conj.transpose() << "]" << std::endl;
+    std::cout << "quat_inv = [" << quat_inv.transpose() << "]" << std::endl;
+    std::cout << "quat_quat_conj = [" << quat_quat_conj.transpose() << "]" << std::endl;
+    std::cout << "quat_quat_inv = [" << quat_quat_inv.transpose() << "]" << std::endl;
 
 
 
