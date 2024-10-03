@@ -10,68 +10,14 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <!-- Build dependencies -->
+  <build_depend>rclcpp</build_depend>
   <build_depend>eigen3_cmake_module</build_depend>
   <build_depend>eigen3</build_depend>
-  <build_depend>rclcpp</build_depend>
-  <build_depend>rclcpp_action</build_depend>
-  <build_depend>rclcpp_lifecycle</build_depend>
-  <build_depend>ament_index_cpp</build_depend>
-  <build_depend>pluginlib</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>class_loader</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>shape_msgs</build_depend>
-  <build_depend>tf2</build_depend>
-  <build_depend>tf2_geometry_msgs</build_depend>
-  <build_depend>tf2_ros</build_depend>
-  <build_depend>tf2_msgs</build_depend>
-  <build_depend>visualization_msgs</build_depend>
-  <build_depend>lifecycle_msgs</build_depend>
-  <build_depend>pcl_conversions</build_depend>
-  <build_depend>cv_bridge</build_depend>
-  <build_depend>image_transport</build_depend>
-  <build_depend>vision_msgs</build_depend>
-  <build_depend>std_srvs</build_depend>
-
-  <!-- System dependencies -->
-  <build_depend>boost</build_depend>
-  <build_depend>opencv4</build_depend>
-  <build_depend>pcl_msgs</build_depend>
-  <build_depend>pcl_conversions</build_depend>
-  <build_depend>pcl_ros</build_depend>
-  <build_depend>libsdl2-dev</build_depend>
 
   <!-- Execution dependencies -->
+  <exec_depend>rclcpp</exec_depend>
   <exec_depend>eigen3_cmake_module</exec_depend>
   <exec_depend>eigen3</exec_depend>
-  <exec_depend>rclcpp</exec_depend>
-  <exec_depend>rclcpp_action</exec_depend>
-  <exec_depend>rclcpp_lifecycle</exec_depend>
-  <exec_depend>ament_index_cpp</exec_depend>
-  <exec_depend>pluginlib</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>geometry_msgs</exec_depend>
-  <exec_depend>class_loader</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>shape_msgs</exec_depend>
-  <exec_depend>tf2</exec_depend>
-  <exec_depend>tf2_geometry_msgs</exec_depend>
-  <exec_depend>tf2_ros</exec_depend>
-  <exec_depend>tf2_msgs</exec_depend>
-  <exec_depend>visualization_msgs</exec_depend>
-  <exec_depend>lifecycle_msgs</exec_depend>
-  <exec_depend>pcl_conversions</exec_depend>
-  <exec_depend>cv_bridge</exec_depend>
-  <exec_depend>image_transport</exec_depend>
-  <exec_depend>vision_msgs</exec_depend>
-  <exec_depend>std_srvs</exec_depend>
-  <exec_depend>boost</exec_depend>
-  <exec_depend>opencv4</exec_depend>
-  <exec_depend>pcl_msgs</exec_depend>
-  <exec_depend>pcl_conversions</exec_depend>
-  <exec_depend>pcl_ros</exec_depend>
-  <exec_depend>libsdl2-dev</exec_depend>
 
   <!-- Test dependencies -->
   <test_depend>ament_lint_auto</test_depend>
@@ -81,3 +27,6 @@
     <build_type>ament_cmake</build_type>
   </export>
 </package>
+
+
+

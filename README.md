@@ -55,34 +55,8 @@ Make sure you have the following installed:
 #### Dependencies from `CMakeLists.txt`:
 
 - `Eigen3`
-- `PCL` (Point Cloud Library): `common`, `io`, `registration`, `visualisation`, `surface`, `filters`, `segmentation`
-- `OpenCV`
-- `Threads`
 - ROS 2 packages:
   - `rclcpp`
-  - `rclcpp_action`
-  - `rclcpp_lifecycle`
-  - `ament_index_cpp`
-  - `pluginlib`
-  - `std_msgs`
-  - `geometry_msgs`
-  - `class_loader`
-  - `sensor_msgs`
-  - `shape_msgs`
-  - `tf2`
-  - `tf2_geometry_msgs`
-  - `tf2_ros`
-  - `tf2_msgs`
-  - `visualisation_msgs`
-  - `lifecycle_msgs`
-  - `pcl_conversions`
-  - `cv_bridge`
-  - `image_transport`
-  - `vision_msgs`
-  - `std_srvs`
-- System libraries:
-  - `SDL2`
-  - `Boost` (specifically `system` component)
 
 Clone this repo into your ROS 2 workspace, install dependencies, and build pkg:
 
