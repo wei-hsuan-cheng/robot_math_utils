@@ -876,6 +876,43 @@ public:
 
 
 
+    /* Motion mapping strategies */
+    static Eigen::VectorXd AxisDecoupling(Eigen::VectorXd joy_input) {
+        double max_val = 0.68;
+        Eigen::VectorXd thres_percent(6);
+        thres_percent << 0.45, 0.45, 0.55, 0.90, 0.90, 0.90; // To be tuned according needs
+
+        Eigen::VectorXd out_thresh = Eigen::VectorXd::Zero(6);
+        Eigen::VectorXd joy_dec = Eigen::VectorXd::Zero(6);
+
+        double max_temp = 0;
+        int max_id = -1;
+        for (int i = 0; i < joy_input.size(); i++)
+        {
+            double sig = joy_input(i);
+            // Check threshold
+            if (std::abs(sig) >= (thres_percent(i) * max_val))
+            {
+                out_thresh(i) = sig > 0 ? 1 : -1; // 1 if positive, -1 if negative
+                if ((std::abs(sig) > max_temp) && !((i == 2 && max_id != -1) || (max_id == 2)))
+                {
+                    max_temp = std::abs(sig);
+                    max_id = i;
+                }
+            }
+        }
+
+        if (max_id != -1)
+        {
+            joy_dec(max_id) = out_thresh(max_id);
+        }
+        return joy_dec;
+    }
+
+    static Eigen::VectorXd VelMapping(Eigen::VectorXd joy_input, Eigen::MatrixXd vel_scale = Eigen::MatrixXd::Identity(6, 6)) {
+        return vel_scale * joy_input; // vx, vy, vz, wx, wy, wz [m/s, rad/s]
+    }
+
     /* Robot controller functions */
     static std::pair<Eigen::VectorXd, bool> ErrorThreshold(const Eigen::VectorXd &error_norm_mavg, const Eigen::VectorXd &erro_norm_thresh, Eigen::VectorXd twist_cmd) {
         bool target_reached(false);
