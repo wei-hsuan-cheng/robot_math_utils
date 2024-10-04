@@ -2,7 +2,7 @@
 #define RM_UTILS_HPP
 
 // Author: Wei-Hsuan Cheng, johnathancheng0125@gmail.com, https://github.com/wei-hsuan-cheng
-// ver_1.1, last edit: 241002
+// ver_1.1, last edit: 241004
 // Some functions are adapted from the Modern Robotics book codebase: https://github.com/Le0nX/ModernRoboticsCpp/tree/eacdf8800bc591b03727512c102d2c5dffe78cec
 
 #include <Eigen/Dense>
@@ -19,6 +19,10 @@
 
 class RMUtils {
 public:
+    /* Unit conversion */
+    static constexpr double r2d = 180.0 / M_PI;
+    static constexpr double d2r = M_PI / 180.0;
+
     /* Data logging */
     static void PrintVec(const Eigen::VectorXd& vec, const std::string& vec_name) {
         std::cout << vec_name << " = ";
@@ -82,19 +86,7 @@ public:
         } else if (angle > half_circle) {
             angle -= full_circle;
         }
-
         return angle;
-    }
-
-    static double ArcCos(double cos_val, bool zero_to_pi = true) {
-        // Return the angle in [0, pi] [rad], or [0, 180] [deg]
-        double theta = ConstrainedAngle(std::acos(cos_val));
-        if (zero_to_pi) {
-            if (theta < 0) {
-                theta *= -1;
-            }
-        } 
-        return theta;
     }
 
 
@@ -143,6 +135,14 @@ public:
 
     static double Sinc(double x) {
         return ( NearZero(x) ) ? cos(x) : std::sin(x) / x;
+    }
+
+    static double ArcCos(double cos_val, bool rad = true) {
+        if (cos_val > 1.0 || cos_val < -1.0) {
+            throw std::invalid_argument("The input cosine value must be within [-1, 1].");
+        }
+        double theta = rad ? std::acos(cos_val) : std::acos(cos_val) * r2d;
+        return theta; // std::acos() guarantees theta lies in [0, pi] [rad] or [0, 180] [deg]
     }
 
     static double Norm(const Eigen::VectorXd& v) {
@@ -447,21 +447,21 @@ public:
     // ZYX Euler angles
     static Eigen::Matrix3d Rotx(double thx, bool rad = true) {
         if (!rad) {
-            thx *= M_PI / 180.0;
+            thx *= d2r;
         }
         return so32Rot(Eigen::Vector3d(thx, 0, 0));
     }
 
     static Eigen::Matrix3d Roty(double thy, bool rad = true) {
         if (!rad) {
-            thy *= M_PI / 180.0;
+            thy *= d2r;
         }
         return so32Rot(Eigen::Vector3d(0, thy, 0));
     }
 
     static Eigen::Matrix3d Rotz(double thz, bool rad = true) {
         if (!rad) {
-            thz *= M_PI / 180.0;
+            thz *= d2r;
         }
         return so32Rot(Eigen::Vector3d(0, 0, thz));
     }
@@ -486,30 +486,30 @@ public:
         double thx = atan2(Rotzyx(2, 1) / cos(thy), Rotzyx(2, 2) / cos(thy));
 
         if (!rad) {
-            thx *= 180.0 / M_PI;
-            thy *= 180.0 / M_PI;
-            thz *= 180.0 / M_PI;
+            thx *= r2d;
+            thy *= r2d;
+            thz *= r2d;
         }
         return Eigen::Vector3d(thz, thy, thx);
     }
 
     static Eigen::Vector4d Quatx(double thx, bool rad = true) {
         if (!rad) {
-            thx *= M_PI / 180.0;
+            thx *= d2r;
         }
         return so32Quat(Eigen::Vector3d(thx, 0, 0));
     }
 
     static Eigen::Vector4d Quaty(double thy, bool rad = true) {
         if (!rad) {
-            thy *= M_PI / 180.0;
+            thy *= d2r;
         }
         return so32Quat(Eigen::Vector3d(0, thy, 0));
     }
 
     static Eigen::Vector4d Quatz(double thz, bool rad = true) {
         if (!rad) {
-            thz *= M_PI / 180.0;
+            thz *= d2r;
         }
         return so32Quat(Eigen::Vector3d(0, 0, thz));
     }

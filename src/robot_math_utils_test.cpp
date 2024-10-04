@@ -17,36 +17,31 @@ int main(int argc, char** argv) {
     auto node = rclcpp::Node::make_shared("test_robot_math_utils");
     std::cout << "\n----- Starting RMUtils tests -----\n" << std::endl;
 
-    double r2d = 180.0 / M_PI;
-    double d2r = M_PI / 180.0;
-
-    // Test ConstrainedAngle
-    std::cout << "\n----- Test ConstrainedAngle -----\n" << std::endl;
-    double angle = -M_PI * 1.00000000001 - 5 * 2 * M_PI;
-    double angle_constrained = RM::ConstrainedAngle(angle, true);
-    std::cout << "angle = " << angle << std::endl;
-    std::cout << "angle_constrained = " << angle_constrained << std::endl;
+    // // Test ConstrainedAngle
+    // std::cout << "\n----- Test ConstrainedAngle -----\n" << std::endl;
+    // double angle = -M_PI * 1.00000000001 - 5 * 2 * M_PI;
+    // double angle_constrained = RM::ConstrainedAngle(angle, true);
+    // std::cout << "angle = " << angle << std::endl;
+    // std::cout << "angle_constrained = " << angle_constrained << std::endl;
 
     // // Test ArcCos
     // std::cout << "\n----- Test ArcCos -----\n" << std::endl;
-    // double cos_val = cos(M_PI * 1.1);
+    // double cos_val = cos(M_PI * 1.1 + 2 * M_PI);
     // double theta_rec = RM::ArcCos(cos_val, false);
-    // double theta_rec_zero_to_pi = RM::ArcCos(cos_val, true);
-    // std::cout << "cos_val = " << cos_val << std::endl;
-    // std::cout << "theta_rec = " << theta_rec << std::endl;
-    // std::cout << "theta_rec_zero_to_pi = " << theta_rec_zero_to_pi << std::endl;
+    // std::cout << "theta_rec [deg] = " << theta_rec << std::endl;
+    // std::cout << "theta_rec [rad] = " << theta_rec * RM::d2r << std::endl;
 
-    // // Test Euler angles (from quat to rot and convert back to zyx_euler)
-    // std::cout << "\n----- Test Euler angles -----\n" << std::endl;
-    // Vector3d zyx_euler(30, 15, 45);
-    // Matrix3d Rotzyx = RM::Rotzyx(zyx_euler * d2r);
-    // Vector4d quat = RM::zyxEuler2Quat(zyx_euler * d2r);
+    // Test Euler angles (from quat to rot and convert back to zyx_euler)
+    std::cout << "\n----- Test Euler angles -----\n" << std::endl;
+    Vector3d zyx_euler(30, 15, 45);
+    Matrix3d Rotzyx = RM::Rotzyx(zyx_euler * RM::d2r);
+    Vector4d quat = RM::zyxEuler2Quat(zyx_euler * RM::d2r);
 
-    // Vector3d zyx_euler_from_Rot = RM::Rot2zyxEuler(Rotzyx) * r2d;
-    // Vector3d zyx_euler_from_quat = RM::Quat2zyxEuler(quat) * r2d;
-    // std::cout << "zyx_euler [deg] = [" << zyx_euler.transpose() << "]" << std::endl;
-    // std::cout << "zyx_euler_from_Rot [deg] = [" << zyx_euler_from_Rot.transpose() << "]" << std::endl;
-    // std::cout << "zyx_euler_from_quat [deg] = [" << zyx_euler_from_quat.transpose() << "]" << std::endl;
+    Vector3d zyx_euler_from_Rot = RM::Rot2zyxEuler(Rotzyx) * RM::r2d;
+    Vector3d zyx_euler_from_quat = RM::Quat2zyxEuler(quat) * RM::r2d;
+    std::cout << "zyx_euler [deg] = [" << zyx_euler.transpose() << "]" << std::endl;
+    std::cout << "zyx_euler_from_Rot [deg] = [" << zyx_euler_from_Rot.transpose() << "]" << std::endl;
+    std::cout << "zyx_euler_from_quat [deg] = [" << zyx_euler_from_quat.transpose() << "]" << std::endl;
 
     // // Test inverse quaternion
     // std::cout << "\n----- Test inverse quaternion -----\n" << std::endl;
@@ -133,14 +128,14 @@ int main(int argc, char** argv) {
 
     
     
-    // Test quaternion Pi
-    std::cout << "\n----- Test quaternion Pi -----\n" << std::endl;
-    Vector4d quat = RM::Quatz(M_PI);
-    std::cout << "quat = [" << quat.transpose() << "]" << std::endl;
-    Vector3d so3_from_quat = RM::Quat2so3(quat);
-    Vector4d axis_angle_from_quat = RM::AxisAng3(so3_from_quat);
-    std::cout << "so3_from_quat = [" << so3_from_quat.transpose() << "]" << std::endl;
-    std::cout << "axis_angle_from_quat = [" << axis_angle_from_quat.transpose() << "]" << std::endl;
+    // // Test quaternion Pi
+    // std::cout << "\n----- Test quaternion Pi -----\n" << std::endl;
+    // Vector4d quat = RM::Quatz(M_PI);
+    // std::cout << "quat = [" << quat.transpose() << "]" << std::endl;
+    // Vector3d so3_from_quat = RM::Quat2so3(quat);
+    // Vector4d axis_angle_from_quat = RM::AxisAng3(so3_from_quat);
+    // std::cout << "so3_from_quat = [" << so3_from_quat.transpose() << "]" << std::endl;
+    // std::cout << "axis_angle_from_quat = [" << axis_angle_from_quat.transpose() << "]" << std::endl;
 
 
 

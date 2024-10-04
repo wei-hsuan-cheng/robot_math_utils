@@ -37,6 +37,7 @@ A C++ Eigen-based maths library for robotics applications, providing a collectio
 - **Eigen Library Integration**: Built on top of the Eigen library for linear algebra operations.
   
 ### Under development
+
 - **Kinematics**: D-H parameters, forward and inverse kinematics, etc.
 - **Motion Planning**: Screw motions, etc.
 
@@ -52,7 +53,7 @@ Make sure you have the following installed:
 - **C++17 Compiler**: Ensure your compiler supports C++17.
 - **Dependencies**: The package depends on several libraries and ROS 2 packages.
 
-#### Dependencies from `CMakeLists.txt`:
+#### Dependencies from `CMakeLists.txt`
 
 - `Eigen3`
 - ROS 2 packages:
@@ -69,6 +70,7 @@ cd ~/ros2_ws && colcon build --packages-select robot_math_utils && . install/set
 ```
 
 Run the ROS 2 node for test:
+
 ```bash
 cd ~/ros2_ws && . install/setup.bash
 ros2 run robot_math_utils robot_math_utils_test
@@ -85,6 +87,7 @@ ros2 run robot_math_utils robot_math_utils_test
 ### Numerical Conditions
 
 - `NearZero`: Check if a value is near zero within a threshold.
+- `ConstrainedAngle`: Normalise angle to a specified interval (-pi, pi].
 - `MeanBuffer`: Compute the mean of vectors in a buffer.
 - `StdBuffer`: Compute the standard deviation of vectors in a buffer.
 - `MAvg`: Compute the moving average of vectors.
@@ -102,6 +105,7 @@ ros2 run robot_math_utils robot_math_utils_test
 - `Tr`: Compute the trace of a matrix.
 - `ConstrainedAngle`: Constrain an angle within a range.
 - `RandNorDist`: Generate a random number from a normal distribution.
+- `RandNorDistVec`: Generate a random vector from a multivariate normal distribution.
 
 ### Robot Transformation Functions
 
