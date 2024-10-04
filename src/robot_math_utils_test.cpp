@@ -264,7 +264,7 @@ int main(int argc, char** argv) {
     std::vector<Eigen::VectorXd> pos_quat_b_e_waypoints = RM::ScrewMotionPath(pos_quat_b_e, pos_quat_e_e_cmd, N);
     // Print waypoints
     for (int i = 0; i < N; i++) {
-        RM::PrintVec(pos_quat_b_e_waypoints[i], "pos_quat_b_e_waypoints(" + std::to_string(i) + ")");
+        RM::PrintVec(RM::PosQuat2R6Pose( pos_quat_b_e_waypoints[i] ), "pose_b_e_waypoints(" + std::to_string(i) + ")");
     }
     
 
