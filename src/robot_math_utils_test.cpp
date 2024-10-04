@@ -20,6 +20,8 @@ int main(int argc, char** argv) {
     double r2d = 180.0 / M_PI;
     double d2r = M_PI / 180.0;
 
+    std::cout << "Hello, world!" << std::endl;
+
     // // Test Euler angles (from quat to rot and convert back to zyx_euler)
     // std::cout << "\n----- Test Euler angles -----\n" << std::endl;
     // Vector3d zyx_euler(30, 15, 45);
