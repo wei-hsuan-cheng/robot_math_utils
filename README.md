@@ -10,7 +10,7 @@ A C++ Eigen-based maths library for robotics applications, providing a collectio
     - [Under development](#under-development)
   - [Installation](#installation)
     - [Prerequisites](#prerequisites)
-      - [Dependencies from `CMakeLists.txt`:](#dependencies-from-cmakeliststxt)
+      - [Dependencies from `CMakeLists.txt`](#dependencies-from-cmakeliststxt)
   - [Functions Overview](#functions-overview)
     - [Data Logging](#data-logging)
     - [Numerical Conditions](#numerical-conditions)
