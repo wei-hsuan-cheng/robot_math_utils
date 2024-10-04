@@ -885,25 +885,24 @@ public:
         } else {
             target_reached = false;
         }
-
         return std::make_pair(twist_cmd, target_reached);
     }
 
     // S-curve smoothing
-    static Eigen::VectorXd SCurve(const Eigen::VectorXd &twist_cmd, const Eigen::VectorXd &twist_cmd_prev, double k, double t, double T)
+    static Eigen::VectorXd SCurve(const Eigen::VectorXd &twist_cmd, const Eigen::VectorXd &twist_cmd_prev, double lambda, double t, double T)
     {   
         // twist_cmd: cmd
         // twist_cmd_prev: start value
-        // k: steepness of the curve
+        // lambda: steepness of the curve (determines max. acc.)
         // t: time elapsed
         // T: total time for the curve to reach the final value
         if (twist_cmd.size() != twist_cmd_prev.size()) {
             throw std::invalid_argument("The input twist_cmd and twist_cmd_prev must have exactly 6 elements.");
         }
-        if (k <= 0 || T <= 0) {
-            throw std::invalid_argument("The k and T must be positive.");
+        if (lambda <= 0 || T <= 0) {
+            throw std::invalid_argument("The lambda and T must be positive.");
         }
-        return twist_cmd_prev + (twist_cmd - twist_cmd_prev) / (1 + exp( -k * (t - T / 2.0) ));
+        return twist_cmd_prev + (twist_cmd - twist_cmd_prev) / (1 + exp( -lambda * (t - T / 2.0) ));
     }
     
     // Cartesian position control
