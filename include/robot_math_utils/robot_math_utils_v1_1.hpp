@@ -70,6 +70,35 @@ public:
 		return (std::abs(val) < thresh);
 	}
 
+    static double ConstrainedAngle(double angle, bool rad = true) {
+        // Normalize angle to (-pi, pi] or (-180, 180]
+        double full_circle = rad ? 2.0 * M_PI : 360.0;
+        double half_circle = rad ? M_PI : 180.0;
+        // Use modulo operation to wrap angle within (-full_circle, full_circle)
+        angle = std::fmod(angle, full_circle);
+        // Adjust angle to be within (-half_circle, half_circle]
+        if (angle <= -half_circle) {
+            angle += full_circle;
+        } else if (angle > half_circle) {
+            angle -= full_circle;
+        }
+
+        return angle;
+    }
+
+    static double ArcCos(double cos_val, bool zero_to_pi = true) {
+        // Return the angle in [0, pi] [rad], or [0, 180] [deg]
+        double theta = ConstrainedAngle(std::acos(cos_val));
+        if (zero_to_pi) {
+            if (theta < 0) {
+                theta *= -1;
+            }
+        } 
+        return theta;
+    }
+
+
+    // Sliding window functions
     static Eigen::VectorXd MeanBuffer(const std::deque<Eigen::VectorXd> &buffer) {
         /* Mean in a sliding window */
         Eigen::VectorXd mean = Eigen::VectorXd::Zero(buffer.front().size());
@@ -128,41 +157,46 @@ public:
         return v.normalized();
     }
 
-    static Eigen::MatrixXd Inv(const Eigen::MatrixXd& M) {
-        return M.inverse();
-    }
-
     static Eigen::MatrixXd Transpose(const Eigen::MatrixXd& M) {
         return M.transpose();
-    }
-
-    static double Det(const Eigen::MatrixXd& M) {
-        return M.determinant();
     }
 
     static double Tr(const Eigen::MatrixXd& M) {
         return M.trace();
     }
 
-    static double ConstrainedAngle(double angle, bool rad = true) {
-        if (!rad) {
-            angle *= M_PI / 180.0;
-        }
-        if (angle >= M_PI && angle < 2 * M_PI) {
-            angle -= 2 * M_PI;
-        } else if (angle >= -2 * M_PI && angle < -M_PI) {
-            angle += 2 * M_PI;
-        }
-        if (!rad) {
-            angle *= 180.0 / M_PI;
-        }
-        return angle;
+    static double Det(const Eigen::MatrixXd& M) {
+        return M.determinant();
     }
 
-    static double RandNorDist(double mean = 0.0, double stddev = 1.0) { // random normal function
+    static Eigen::MatrixXd Inv(const Eigen::MatrixXd& M) {
+        return M.inverse();
+    }
+
+    // Random variables
+    static double RandNorDist(double mean = 0.0, double stddev = 1.0) {
         static std::mt19937 rng(std::random_device{}()); // Standard mersenne_twister_engine
         std::normal_distribution<double> dist(mean, stddev);
         return dist(rng);
+    }
+
+    static Eigen::VectorXd RandNorDistVec(const Eigen::VectorXd& mean, const Eigen::MatrixXd& cov) {
+        static std::mt19937 rng(std::random_device{}()); // Standard mersenne_twister_engine
+        if (mean.size() != cov.rows() || cov.rows() != cov.cols()) {
+            throw std::invalid_argument("Mean vector size and covariance matrix dimensions must match.");
+        }
+        // Perform Cholesky decomposition (LLT) of the covariance matrix
+        Eigen::LLT<Eigen::MatrixXd> lltOfCov(cov);
+        if (lltOfCov.info() == Eigen::NumericalIssue) {
+            throw std::runtime_error("Covariance matrix is not positive definite.");
+        }
+        Eigen::MatrixXd L = lltOfCov.matrixL(); // Lower-triangular matrix
+        // Generate a vector of standard normal random variables
+        Eigen::VectorXd z(mean.size());
+        for (int i = 0; i < z.size(); ++i) {
+            z(i) = RandNorDist();
+        }
+        return mean + L * z;
     }
 
 
@@ -337,7 +371,7 @@ public:
         if (quat.size() != 4) {
             throw std::invalid_argument("The input quaternion must have exactly 4 elements.");
         }
-        double theta = ConstrainedAngle( 2 * std::acos(quat(0)), true ); 
+        double theta = 2 * ArcCos(quat(0), true); 
         return (2 / Sinc(theta / 2)) * quat.tail(3);
     }
 
@@ -644,6 +678,7 @@ public:
         return pos_quat_1_2;
     }
 
+
     // Other conversions
     // rot_pos <-> SE(3) matrix
     static Eigen::Matrix4d RotPos2SE3(const Eigen::Matrix3d& R_1_2, const Eigen::Vector3d& p_1_2) {
@@ -659,6 +694,7 @@ public:
         return std::make_pair(R_1_2, p_1_2);
     }
 
+
     // r6_pose <-> SE(3) matrix
     static Eigen::Matrix4d R6Pose2SE3(const Eigen::VectorXd& pose_1_2) {
         return PosQuat2SE3( R6Pose2PosQuat(pose_1_2) );
@@ -666,12 +702,6 @@ public:
 
     static Eigen::VectorXd SE32R6Pose(const Eigen::Matrix4d& T_1_2) {
         return PosQuat2R6Pose( SE32PosQuat(T_1_2) );
-    }
-
-    static Eigen::Matrix4d R6Poses2SE3(const Eigen::VectorXd& pose_b_1, const Eigen::VectorXd& pose_b_2) {
-        Eigen::Matrix4d T_b_1 = R6Pose2SE3(pose_b_1);
-        Eigen::Matrix4d T_b_2 = R6Pose2SE3(pose_b_2);
-        return Inv(T_b_1) * T_b_2; // T_1_2
     }
 
     // r6_pose <-> rot_pos
@@ -686,12 +716,6 @@ public:
         return PosQuat2R6Pose( SE32PosQuat( RotPos2SE3(R_1_2, p_1_2) ) );
     }
 
-    static std::pair<Eigen::Matrix3d, Eigen::Vector3d> R6Poses2RotPos(const Eigen::VectorXd& pose_b_1, const Eigen::VectorXd& pose_b_2) {
-        Eigen::Matrix4d T_1_2 = R6Poses2SE3(pose_b_1, pose_b_2);
-        Eigen::Matrix3d R_1_2 = T_1_2.topLeftCorner<3, 3>();
-        Eigen::Vector3d p_1_2 = T_1_2.topRightCorner<3, 1>();
-        return std::make_pair(R_1_2, p_1_2);
-    }
 
     // SE3 matrix <-> pos_so3
     static Eigen::VectorXd SE32Posso3(const Eigen::Matrix4d& T_1_2) {
@@ -743,7 +767,6 @@ public:
         return pos_quat_init_final; 
     }
 
-    // Pause here 241003 (not tested yet)
     static Eigen::VectorXd PosQuats2RelativePosQuat(const Eigen::VectorXd& pos_quat_b_1, const Eigen::VectorXd& pos_quat_b_2) {
         if (pos_quat_b_1.size() != 7 || pos_quat_b_2.size() != 7) {
             throw std::invalid_argument("Each pose must have exactly 7 elements.");
@@ -755,22 +778,18 @@ public:
         if (pose_b_1.size() != 6 || pose_1_2.size() != 6) {
             throw std::invalid_argument("Each pose must have exactly 6 elements.");
         }
-        Eigen::Matrix4d T_b_2 = R6Pose2SE3(pose_b_1) * R6Pose2SE3(pose_1_2);
-        return SE32R6Pose(T_b_2);
+        return PosQuat2R6Pose( TransformPosQuat( R6Pose2PosQuat(pose_b_1), R6Pose2PosQuat(pose_1_2) ) ); // pose_b_2
     }
 
     static Eigen::VectorXd TransformR6Poses(const std::vector<Eigen::VectorXd>& poses) {
         if (poses.size() == 0) {
             throw std::invalid_argument("The input list of poses is empty.");
         }
-        Eigen::Matrix4d T_init_final = Eigen::Matrix4d::Identity();
-        for (const auto& pose : poses) {
-            if (pose.size() != 6) {
-                throw std::invalid_argument("Each pose must have exactly 6 elements.");
-            }
-            T_init_final *= R6Pose2SE3(pose);
+        Eigen::VectorXd pose_init_final = poses[0]; // Initial pose
+        for (std::size_t i = 1; i < poses.size(); ++i) {
+            pose_init_final = TransformR6Pose(pose_init_final, poses[i]);
         }
-        return SE32R6Pose(T_init_final); // pose_init_final
+        return pose_init_final;
     }
 
     static Eigen::VectorXd R6Poses2RelativeR6Pose(const Eigen::VectorXd& pose_b_1, const Eigen::VectorXd& pose_b_2) {

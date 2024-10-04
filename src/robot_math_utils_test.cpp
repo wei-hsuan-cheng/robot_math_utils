@@ -20,7 +20,21 @@ int main(int argc, char** argv) {
     double r2d = 180.0 / M_PI;
     double d2r = M_PI / 180.0;
 
-    std::cout << "Hello, world!" << std::endl;
+    // Test ConstrainedAngle
+    std::cout << "\n----- Test ConstrainedAngle -----\n" << std::endl;
+    double angle = -M_PI * 1.00000000001 - 5 * 2 * M_PI;
+    double angle_constrained = RM::ConstrainedAngle(angle, true);
+    std::cout << "angle = " << angle << std::endl;
+    std::cout << "angle_constrained = " << angle_constrained << std::endl;
+
+    // // Test ArcCos
+    // std::cout << "\n----- Test ArcCos -----\n" << std::endl;
+    // double cos_val = cos(M_PI * 1.1);
+    // double theta_rec = RM::ArcCos(cos_val, false);
+    // double theta_rec_zero_to_pi = RM::ArcCos(cos_val, true);
+    // std::cout << "cos_val = " << cos_val << std::endl;
+    // std::cout << "theta_rec = " << theta_rec << std::endl;
+    // std::cout << "theta_rec_zero_to_pi = " << theta_rec_zero_to_pi << std::endl;
 
     // // Test Euler angles (from quat to rot and convert back to zyx_euler)
     // std::cout << "\n----- Test Euler angles -----\n" << std::endl;
@@ -34,24 +48,20 @@ int main(int argc, char** argv) {
     // std::cout << "zyx_euler_from_Rot [deg] = [" << zyx_euler_from_Rot.transpose() << "]" << std::endl;
     // std::cout << "zyx_euler_from_quat [deg] = [" << zyx_euler_from_quat.transpose() << "]" << std::endl;
 
-    // Test inverse quaternion
-     std::cout << "\n----- Test inverse quaternion -----\n" << std::endl;
-    Vector3d zyx_euler(30, 15, 45);
-    Vector4d quat = RM::zyxEuler2Quat(zyx_euler * d2r) * 2.5;
-    Vector4d quat_conj = RM::ConjQuat(quat);
-    Vector4d quat_inv = RM::InvQuat(quat);
-    Vector4d quat_quat_conj = RM::QuatMul(quat, RM::ConjQuat(quat));
-    Vector4d quat_quat_inv = RM::QuatMul(quat, RM::InvQuat(quat));
+    // // Test inverse quaternion
+    // std::cout << "\n----- Test inverse quaternion -----\n" << std::endl;
+    // Vector3d zyx_euler(30, 15, 45);
+    // Vector4d quat = RM::zyxEuler2Quat(zyx_euler * d2r) * 2.5;
+    // Vector4d quat_conj = RM::ConjQuat(quat);
+    // Vector4d quat_inv = RM::InvQuat(quat);
+    // Vector4d quat_quat_conj = RM::QuatMul(quat, RM::ConjQuat(quat));
+    // Vector4d quat_quat_inv = RM::QuatMul(quat, RM::InvQuat(quat));
 
-
-    std::cout << "quat = [" << quat.transpose() << "]" << std::endl;
-    std::cout << "quat_conj = [" << quat_conj.transpose() << "]" << std::endl;
-    std::cout << "quat_inv = [" << quat_inv.transpose() << "]" << std::endl;
-    std::cout << "quat_quat_conj = [" << quat_quat_conj.transpose() << "]" << std::endl;
-    std::cout << "quat_quat_inv = [" << quat_quat_inv.transpose() << "]" << std::endl;
-
-
-
+    // std::cout << "quat = [" << quat.transpose() << "]" << std::endl;
+    // std::cout << "quat_conj = [" << quat_conj.transpose() << "]" << std::endl;
+    // std::cout << "quat_inv = [" << quat_inv.transpose() << "]" << std::endl;
+    // std::cout << "quat_quat_conj = [" << quat_quat_conj.transpose() << "]" << std::endl;
+    // std::cout << "quat_quat_inv = [" << quat_quat_inv.transpose() << "]" << std::endl;
 
 
 
@@ -87,6 +97,50 @@ int main(int argc, char** argv) {
     // std::cout << "\n----- Test InvR6Pose -----\n" << std::endl;
     // VectorXd pose_2_1 = RM::InvR6Pose(temp_vec1);
     // std::cout << "\npose_2_1 = [" << pose_2_1.transpose() << "]" << std::endl;
+
+    // // Test PosQuats2RelativePosQuat
+    // std::cout << "\n----- Test PosQuats2RelativePosQuat -----\n" << std::endl;
+    // VectorXd pos_quat_1_2(7), pos_quat_1_3(7), pos_quat_4_5(7), pos_quat_5_6(7);
+    // VectorXd pose_1_2(6);
+    // pose_1_2 << 0.0, 0.0, 0.0, 0.0, 0.0, 0.5;
+    // pos_quat_1_2 = RM::R6Pose2PosQuat(pose_1_2);
+
+    // VectorXd pose_1_3(6);
+    // pose_1_3 << 0.0, 0.0, 0.0, 0.0, 0.0, 0.8;
+    // pos_quat_1_3 = RM::R6Pose2PosQuat(pose_1_3);
+
+    // VectorXd pose_4_5(6);
+    // pose_4_5 << 1.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    // pos_quat_4_5 = RM::R6Pose2PosQuat(pose_4_5);
+
+    // VectorXd pose_5_6(6);
+    // pose_5_6 << 0.0, 0.0, 0.3, 0.0, 0.0, 0.0;
+    // pos_quat_5_6 = RM::R6Pose2PosQuat(pose_5_6);
+
+    // VectorXd pos_quat_2_3 = RM::PosQuats2RelativePosQuat(pos_quat_1_2, pos_quat_1_3);
+    // VectorXd pose_2_3_from_pos_quat = RM::PosQuat2R6Pose(pos_quat_2_3);
+    // std::cout << "\npose_2_3_from_pos_quat = [" << pose_2_3_from_pos_quat.transpose() << "]" << std::endl;
+
+    // // Test R6Poses2RelativeR6Pose and TransformR6Poses
+    // std::cout << "\n----- Test R6Poses2RelativeR6Pose and TransformR6Poses -----\n" << std::endl;
+    // VectorXd pose_2_3 = RM::R6Poses2RelativeR6Pose(pose_1_2, pose_1_3);
+    // std::cout << "\npose_2_3 = [" << pose_2_3.transpose() << "]" << std::endl;
+
+    // VectorXd pose_4_6 = RM::TransformR6Poses({pose_4_5, pose_5_6});
+    // std::cout << "\npose_4_6 = [" << pose_4_6.transpose() << "]" << std::endl;
+
+    
+
+    
+    
+    // Test quaternion Pi
+    std::cout << "\n----- Test quaternion Pi -----\n" << std::endl;
+    Vector4d quat = RM::Quatz(M_PI);
+    std::cout << "quat = [" << quat.transpose() << "]" << std::endl;
+    Vector3d so3_from_quat = RM::Quat2so3(quat);
+    Vector4d axis_angle_from_quat = RM::AxisAng3(so3_from_quat);
+    std::cout << "so3_from_quat = [" << so3_from_quat.transpose() << "]" << std::endl;
+    std::cout << "axis_angle_from_quat = [" << axis_angle_from_quat.transpose() << "]" << std::endl;
 
 
 
