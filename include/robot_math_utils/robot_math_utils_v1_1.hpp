@@ -913,6 +913,36 @@ public:
         return vel_scale * joy_input; // vx, vy, vz, wx, wy, wz [m/s, rad/s]
     }
 
+
+
+    /* Motion planning */
+    // Screw motions
+    static std::vector<Eigen::VectorXd> ScrewMotionPath(const Eigen::VectorXd& pos_quat_b_e, const Eigen::VectorXd& pos_quat_e_e_cmd, int N) {
+        std::vector<Eigen::VectorXd> waypoints; // Output waypoints
+        if (pos_quat_b_e.size() != 7 || pos_quat_e_e_cmd.size() != 7)
+        {
+            throw std::invalid_argument("Each pos_quat must have exactly 6 elements.");
+        }
+        // Convert pos_quat_e_e_cmd to pos_so3_e_e_cmd
+        Eigen::VectorXd pos_so3_e_e_cmd = PosQuat2Posso3(pos_quat_e_e_cmd);
+        // Generate waypoints
+        for (int i = 0; i < N; ++i)
+        {
+            double alpha = static_cast<double>(i + 1) / N;
+            // Intermediate pos_so3
+            Eigen::VectorXd pos_so3_e_e_cmd_i = alpha * pos_so3_e_e_cmd;
+            // Compute pos_so3 back to pos_quat
+            Eigen::VectorXd pos_quat_e_e_cmd_i = Posso32PosQuat(pos_so3_e_e_cmd_i);
+            // Transform to base frame
+            Eigen::VectorXd pos_quat_b_e_d_i = TransformPosQuat(pos_quat_b_e, pos_quat_e_e_cmd_i);
+            // Append to waypoints
+            waypoints.push_back(pos_quat_b_e_d_i);
+        }
+        return waypoints;
+    }
+
+
+
     /* Robot controller functions */
     static std::pair<Eigen::VectorXd, bool> ErrorThreshold(const Eigen::VectorXd &error_norm_mavg, const Eigen::VectorXd &erro_norm_thresh, Eigen::VectorXd twist_cmd) {
         bool target_reached(false);

@@ -31,17 +31,17 @@ int main(int argc, char** argv) {
     // std::cout << "theta_rec [deg] = " << theta_rec << std::endl;
     // std::cout << "theta_rec [rad] = " << theta_rec * RM::d2r << std::endl;
 
-    // Test Euler angles (from quat to rot and convert back to zyx_euler)
-    std::cout << "\n----- Test Euler angles -----\n" << std::endl;
-    Vector3d zyx_euler(30, 15, 45);
-    Matrix3d Rotzyx = RM::Rotzyx(zyx_euler * RM::d2r);
-    Vector4d quat = RM::zyxEuler2Quat(zyx_euler * RM::d2r);
+    // // Test Euler angles (from quat to rot and convert back to zyx_euler)
+    // std::cout << "\n----- Test Euler angles -----\n" << std::endl;
+    // Vector3d zyx_euler(30, 15, 45);
+    // Matrix3d Rotzyx = RM::Rotzyx(zyx_euler * RM::d2r);
+    // Vector4d quat = RM::zyxEuler2Quat(zyx_euler * RM::d2r);
 
-    Vector3d zyx_euler_from_Rot = RM::Rot2zyxEuler(Rotzyx) * RM::r2d;
-    Vector3d zyx_euler_from_quat = RM::Quat2zyxEuler(quat) * RM::r2d;
-    std::cout << "zyx_euler [deg] = [" << zyx_euler.transpose() << "]" << std::endl;
-    std::cout << "zyx_euler_from_Rot [deg] = [" << zyx_euler_from_Rot.transpose() << "]" << std::endl;
-    std::cout << "zyx_euler_from_quat [deg] = [" << zyx_euler_from_quat.transpose() << "]" << std::endl;
+    // Vector3d zyx_euler_from_Rot = RM::Rot2zyxEuler(Rotzyx) * RM::r2d;
+    // Vector3d zyx_euler_from_quat = RM::Quat2zyxEuler(quat) * RM::r2d;
+    // std::cout << "zyx_euler [deg] = [" << zyx_euler.transpose() << "]" << std::endl;
+    // std::cout << "zyx_euler_from_Rot [deg] = [" << zyx_euler_from_Rot.transpose() << "]" << std::endl;
+    // std::cout << "zyx_euler_from_quat [deg] = [" << zyx_euler_from_quat.transpose() << "]" << std::endl;
 
     // // Test inverse quaternion
     // std::cout << "\n----- Test inverse quaternion -----\n" << std::endl;
@@ -255,8 +255,17 @@ int main(int argc, char** argv) {
     // MatrixXd log_se3 = RM::MatrixLog6(exp_se3);
     // std::cout << "Matrix logarithm of SE(3):\n" << log_se3 << std::endl;
 
-
-
+    // Test ScrewMotion
+    std::cout << "\n----- Test ScrewMotion -----\n" << std::endl;
+    VectorXd pos_quat_b_e(7);
+    pos_quat_b_e << 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0;
+    VectorXd pos_quat_e_e_cmd = RM::R6Pose2PosQuat( (VectorXd(6) << 1.0, 2.0, 3.0, 0.0, 0.0, 0.75).finished() );
+    int N = 10;
+    std::vector<Eigen::VectorXd> pos_quat_b_e_waypoints = RM::ScrewMotionPath(pos_quat_b_e, pos_quat_e_e_cmd, N);
+    // Print waypoints
+    for (int i = 0; i < N; i++) {
+        RM::PrintVec(pos_quat_b_e_waypoints[i], "pos_quat_b_e_waypoints(" + std::to_string(i) + ")");
+    }
     
 
 
