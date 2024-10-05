@@ -921,7 +921,7 @@ public:
         std::vector<Eigen::VectorXd> waypoints; // Output waypoints
         if (pos_quat_b_e.size() != 7 || pos_quat_e_e_cmd.size() != 7)
         {
-            throw std::invalid_argument("Each pos_quat must have exactly 6 elements.");
+            throw std::invalid_argument("Each pos_quat must have exactly 7 elements.");
         }
         // Convert pos_quat_e_e_cmd to pos_so3_e_e_cmd
         Eigen::VectorXd pos_so3_e_e_cmd = PosQuat2Posso3(pos_quat_e_e_cmd);
