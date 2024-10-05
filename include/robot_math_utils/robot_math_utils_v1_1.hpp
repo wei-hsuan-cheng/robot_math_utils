@@ -90,7 +90,7 @@ public:
     }
 
 
-    // Sliding window functions
+    /* Sliding window functions */
     static Eigen::VectorXd MeanBuffer(const std::deque<Eigen::VectorXd> &buffer) {
         /* Mean in a sliding window */
         Eigen::VectorXd mean = Eigen::VectorXd::Zero(buffer.front().size());
@@ -172,6 +172,11 @@ public:
     static Eigen::MatrixXd Inv(const Eigen::MatrixXd& M) {
         return M.inverse();
     }
+
+    static Eigen::MatrixXd LeftPInv(const Eigen::MatrixXd& M) {
+        return Inv( Transpose(M) * M ) * Transpose(M);
+    }
+
 
     // Random variables
     static double RandNorDist(double mean = 0.0, double stddev = 1.0) {
@@ -825,9 +830,6 @@ public:
         return adj_b2e * twist_b_e; // 6x1
     }
 
-    static Eigen::MatrixXd LeftPInv(const Eigen::MatrixXd& M) {
-        return Inv( Transpose(M) * M ) * Transpose(M);
-    }
 
 
     /* Pose preprocessing */
@@ -876,7 +878,7 @@ public:
 
 
 
-    /* Motion mapping strategies */
+    /* Motion mapping */
     static Eigen::VectorXd AxisDecoupling(Eigen::VectorXd joy_input) {
         double max_val = 0.68;
         Eigen::VectorXd thres_percent(6);
@@ -916,7 +918,25 @@ public:
 
 
     /* Motion planning */
-    // Screw motions
+    // S-curve velocity smoothing
+    static Eigen::VectorXd SCurve(const Eigen::VectorXd &twist_cmd, const Eigen::VectorXd &twist_cmd_prev, double lambda, double t, double T)
+    {   
+        // twist_cmd: cmd
+        // twist_cmd_prev: start value
+        // lambda: steepness of the curve (determines max. acc.)
+        // t: time elapsed
+        // T: total time for the curve to reach the final value
+        if (twist_cmd.size() != twist_cmd_prev.size()) {
+            throw std::invalid_argument("The input twist_cmd and twist_cmd_prev must have exactly 6 elements.");
+        }
+        if (lambda <= 0 || T <= 0) {
+            throw std::invalid_argument("The lambda and T must be positive.");
+        }
+        return twist_cmd_prev + (twist_cmd - twist_cmd_prev) / (1 + exp( -lambda * (t - T / 2.0) ));
+    }
+
+
+    // Screw motion path generation (only waypoints)
     static std::vector<Eigen::VectorXd> ScrewMotionPath(const Eigen::VectorXd& pos_quat_b_e, const Eigen::VectorXd& pos_quat_e_e_cmd, int N) {
         std::vector<Eigen::VectorXd> waypoints; // Output waypoints
         if (pos_quat_b_e.size() != 7 || pos_quat_e_e_cmd.size() != 7)
@@ -942,6 +962,35 @@ public:
     }
 
 
+    // Screw motion trajectory generation (waypoints and timestamps)
+    static std::pair<std::vector<Eigen::VectorXd>, std::vector<double>> ScrewMotionTraj(const Eigen::VectorXd& pos_quat_b_e, const Eigen::VectorXd& pos_quat_e_e_cmd, int N, double T) {
+        std::vector<Eigen::VectorXd> waypoints; // Output waypoints
+        std::vector<double> timestamps; // Output timestamps
+        if (pos_quat_b_e.size() != 7 || pos_quat_e_e_cmd.size() != 7)
+        {
+            throw std::invalid_argument("Each pos_quat must have exactly 7 elements.");
+        }
+        // Convert pos_quat_e_e_cmd to pos_so3_e_e_cmd
+        Eigen::VectorXd pos_so3_e_e_cmd = PosQuat2Posso3(pos_quat_e_e_cmd);
+        // Generate waypoints
+        for (int i = 0; i < N; ++i)
+        {
+            double alpha = static_cast<double>(i + 1) / N;
+            // Intermediate pos_so3
+            Eigen::VectorXd pos_so3_e_e_cmd_i = alpha * pos_so3_e_e_cmd;
+            // Compute pos_so3 back to pos_quat
+            Eigen::VectorXd pos_quat_e_e_cmd_i = Posso32PosQuat(pos_so3_e_e_cmd_i);
+            // Transform to base frame
+            Eigen::VectorXd pos_quat_b_e_d_i = TransformPosQuat(pos_quat_b_e, pos_quat_e_e_cmd_i);
+            // Append to waypoints
+            waypoints.push_back(pos_quat_b_e_d_i);
+            // Append timestamps
+            timestamps.push_back(alpha * T);
+        }
+        return std::make_pair(waypoints, timestamps);
+    }
+
+
 
     /* Robot controller functions */
     static std::pair<Eigen::VectorXd, bool> ErrorThreshold(const Eigen::VectorXd &error_norm_mavg, const Eigen::VectorXd &erro_norm_thresh, Eigen::VectorXd twist_cmd) {
@@ -955,22 +1004,6 @@ public:
         return std::make_pair(twist_cmd, target_reached);
     }
 
-    // S-curve smoothing
-    static Eigen::VectorXd SCurve(const Eigen::VectorXd &twist_cmd, const Eigen::VectorXd &twist_cmd_prev, double lambda, double t, double T)
-    {   
-        // twist_cmd: cmd
-        // twist_cmd_prev: start value
-        // lambda: steepness of the curve (determines max. acc.)
-        // t: time elapsed
-        // T: total time for the curve to reach the final value
-        if (twist_cmd.size() != twist_cmd_prev.size()) {
-            throw std::invalid_argument("The input twist_cmd and twist_cmd_prev must have exactly 6 elements.");
-        }
-        if (lambda <= 0 || T <= 0) {
-            throw std::invalid_argument("The lambda and T must be positive.");
-        }
-        return twist_cmd_prev + (twist_cmd - twist_cmd_prev) / (1 + exp( -lambda * (t - T / 2.0) ));
-    }
     
     // Cartesian position control
     static Eigen::VectorXd KpPosso3(const Eigen::VectorXd& pos_so3_m_cmd, const Eigen::MatrixXd& kp_pos_so3, bool target_reached) {

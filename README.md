@@ -14,14 +14,19 @@ A C++ Eigen-based maths library for robotics applications, providing a collectio
   - [Functions Overview](#functions-overview)
     - [Data Logging](#data-logging)
     - [Numerical Conditions](#numerical-conditions)
+    - [Sliding Window Functions](#sliding-window-functions)
     - [Basic Maths Functions](#basic-maths-functions)
+      - [Random Variables](#random-variables)
     - [Robot Transformation Functions](#robot-transformation-functions)
       - [Homogeneous Coordinates](#homogeneous-coordinates)
-      - [Image Coordinates](#image-coordinates)
+      - [Homogeneous Image Coordinates](#homogeneous-image-coordinates)
     - [SO(3) and so(3) Functions](#so3-and-so3-functions)
     - [SE(3) and se(3) Functions](#se3-and-se3-functions)
       - [Pose Conversions](#pose-conversions)
+      - [Velocity Adjoint Maps](#velocity-adjoint-maps)
     - [Pose Preprocessing](#pose-preprocessing)
+    - [Motion Mapping](#motion-mapping)
+    - [Motion Planning](#motion-planning)
     - [Robot Controller Functions](#robot-controller-functions)
   - [Acknowledgements](#acknowledgements)
   - [Contact](#contact)
@@ -33,13 +38,14 @@ A C++ Eigen-based maths library for robotics applications, providing a collectio
 - **Maths Utilities**: Basic mathematical functions, including error percentage, normalisation, and random number generation.
 - **Robot Transformations**: Functions for homogeneous coordinates, SO(3) rotations, quaternions, and SE(3) pose transformations.
 - **Exp and Log Maps**: Implementations of exponential and logarithmic mappings for SO(3) rotations and SE(3) transformations.
-- **Controller functions**: Utilities for error thresholds, S-curve generation, and proportional controller.
+- **Motion Mapping**: Map from one workspace/velocity into another. Commonly used in telerobotics.
+- **Motion Planning**: Screw motions, etc.
+- **Controller Functions**: Utilities for error thresholds, S-curve generation, and proportional controller.
 - **Eigen Library Integration**: Built on top of the Eigen library for linear algebra operations.
   
 ### Under development
 
 - **Kinematics**: D-H parameters, forward and inverse kinematics, etc.
-- **Motion Planning**: Screw motions, etc.
 
 ## Installation
 
@@ -88,6 +94,9 @@ ros2 run robot_math_utils robot_math_utils_test
 
 - `NearZero`: Check if a value is near zero within a threshold.
 - `ConstrainedAngle`: Normalise angle to a specified interval (-pi, pi].
+  
+### Sliding Window Functions
+
 - `MeanBuffer`: Compute the mean of vectors in a buffer.
 - `StdBuffer`: Compute the standard deviation of vectors in a buffer.
 - `MAvg`: Compute the moving average of vectors.
@@ -96,14 +105,18 @@ ros2 run robot_math_utils robot_math_utils_test
 
 - `ErrorPercentage`: Calculate the error percentage between measurement and ground truth.
 - `Sinc`: Compute the sinc function.
+- `ArcCos`: Compute the arccos function.
 - `Norm`: Compute the norm of a vector.
 - `MatNorm`: Compute the norm of a matrix.
 - `Normalized`: Normalise a vector.
-- `Inv`: Compute the inverse of a matrix.
 - `Transpose`: Compute the transpose of a matrix.
-- `Det`: Compute the determinant of a matrix.
 - `Tr`: Compute the trace of a matrix.
-- `ConstrainedAngle`: Constrain an angle within a range.
+- `Det`: Compute the determinant of a matrix.
+- `Inv`: Compute the inverse of a matrix.
+- `LeftPInv`: Compute the (left) Moore–Penrose inverse of a matrix.
+  
+#### Random Variables
+
 - `RandNorDist`: Generate a random number from a normal distribution.
 - `RandNorDistVec`: Generate a random vector from a multivariate normal distribution.
 
@@ -114,7 +127,7 @@ ros2 run robot_math_utils robot_math_utils_test
 - `R3Vec2Homo`: Convert a 3D vector to homogeneous coordinates.
 - `Homo2R3Vec`: Convert homogeneous coordinates to a 3D vector.
 
-#### Image Coordinates
+#### Homogeneous Image Coordinates
 
 - `ImgCoord2Homo`: Convert image coordinates to homogeneous form.
 - `Homo2ImgCoord`: Convert homogeneous image coordinates back to image coordinates.
@@ -155,15 +168,31 @@ ros2 run robot_math_utils robot_math_utils_test
 - `RotPos2SE3`, `SE32RotPos`: Convert between rotation-position pairs and SE(3) matrices.
 - `R6Pose2SE3`, `SE32R6Pose`: Convert between 6D pose and SE(3) matrix representations.
 
+#### Velocity Adjoint Maps
+
+- `Adjoint`: The adjoint map matrix.
+- `AdjointE2B`: The adjoint map that transfer end-effector representation into base representation.
+- `AdjointB2E`: The adjoint map that transfer base representation into end-effector representation.
+
 ### Pose Preprocessing
 
 - `PosQuatOutlierRemoval`: Remove outliers from pose data using a buffer.
 
+### Motion Mapping
+
+- `AxisDecoupling`: Decouple the joystick axis motin so that each time only single-axis is triggered.
+- `VelMapping`: Map from joystick positional signal to robot velocity/twist command.
+
+### Motion Planning
+
+- `SCurve`: Smooth the velocity profile.
+- `ScrewMotionPath`: Screw motion path generation (only waypoints).
+- `ScrewMotionTraj`: Screw motion trajectory generation (waypoints and timestamps).
+
 ### Robot Controller Functions
 
 - `ErrorThreshold`: Check if the error is within a threshold.
-- `SCurve`: Generate an S-curve for smooth command transitions.
-- `KpPosso3`: Compute a proportional control command.
+- `KpPosso3`: Cartesian position control and position-based visual servoing (PBVS).
   
 ## Acknowledgements
 

@@ -261,12 +261,15 @@ int main(int argc, char** argv) {
     pos_quat_b_e << 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0;
     VectorXd pos_quat_e_e_cmd = RM::R6Pose2PosQuat( (VectorXd(6) << 1.0, 2.0, 3.0, 0.0, 0.0, 0.75).finished() );
     int N = 10;
-    std::vector<Eigen::VectorXd> pos_quat_b_e_waypoints = RM::ScrewMotionPath(pos_quat_b_e, pos_quat_e_e_cmd, N);
-    // Print waypoints
-    for (int i = 0; i < N; i++) {
-        RM::PrintVec(RM::PosQuat2R6Pose( pos_quat_b_e_waypoints[i] ), "pose_b_e_waypoints(" + std::to_string(i) + ")");
-    }
+    double T = 5.0;
     
+    // ScrewMotionTraj
+    auto[pos_quat_b_e_traj, t]  = RM::ScrewMotionTraj(pos_quat_b_e, pos_quat_e_e_cmd, N, T);
+    // Print trajectory
+    for (int i = 0; i < N; i++) {
+        std::cout << "t(" << i << ") [s] = " << t[i] << ", ";
+        RM::PrintVec(RM::PosQuat2R6Pose( pos_quat_b_e_traj[i] ), "pose_b_e_traj(" + std::to_string(i) + ")");
+    }
 
 
     
