@@ -39,8 +39,8 @@ A C++ Eigen-based maths library for robotics applications, providing a collectio
 - **Robot Transformations**: Functions for homogeneous coordinates, SO(3) rotations, quaternions, and SE(3) pose transformations.
 - **Exp and Log Maps**: Implementations of exponential and logarithmic mappings for SO(3) rotations and SE(3) transformations.
 - **Motion Mapping**: Map from one workspace/velocity into another. Commonly used in telerobotics.
-- **Motion Planning**: Screw motions, etc.
-- **Controller Functions**: Utilities for error thresholds, S-curve generation, and proportional controller.
+- **Motion Planning**: Screw motions and S-curve generation, etc.
+- **Controller Functions**: Utilities for error thresholds and kinematic controller.
 - **Eigen Library Integration**: Built on top of the Eigen library for linear algebra operations.
   
 ### Under development
