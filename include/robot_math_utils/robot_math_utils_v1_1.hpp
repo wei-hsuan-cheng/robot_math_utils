@@ -1023,7 +1023,7 @@ public:
     }
 
     
-    // Cartesian position control
+    // Cartesian kinematic control
     static Eigen::VectorXd KpPosso3(const Eigen::VectorXd& pos_so3_m_cmd, const Eigen::MatrixXd& kp_pos_so3, bool target_reached) {
         if (pos_so3_m_cmd.size() != 6) {
             throw std::invalid_argument("The input pose_error must have exactly 6 elements.");

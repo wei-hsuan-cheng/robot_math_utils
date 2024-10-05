@@ -192,7 +192,7 @@ ros2 run robot_math_utils robot_math_utils_test
 ### Robot Controller Functions
 
 - `ErrorThreshold`: Check if the error is within a threshold.
-- `KpPosso3`: Cartesian position control and position-based visual servoing (PBVS).
+- `KpPosso3`: Cartesian kinematic control for position-based visual servoing (PBVS).
 
 ## Acknowledgements
 
