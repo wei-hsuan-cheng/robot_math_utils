@@ -67,6 +67,26 @@ public:
         csv_writer_ << "\n"; // End of each row
     }
 
+    static void SaveMat(const Eigen::MatrixXd& mat, const std::string& filename) {
+        std::ofstream file(filename);
+        if (file.is_open()) {
+            // Optional: Set precision if needed
+            // file << std::fixed << std::setprecision(6);
+            for (int i = 0; i < mat.rows(); ++i) {
+                for (int j = 0; j < mat.cols(); ++j) {
+                    file << mat(i, j);
+                    if (j < mat.cols() - 1) {
+                        file << ","; // Add a comma unless it's the last column
+                    }
+                }
+                file << "\n"; // Newline after each row
+            }
+            file.close();
+        } else {
+            std::cerr << "Could not open file " << filename << " for writing." << std::endl;
+        }
+    }
+
 
 
     /* Numerical conditions */
@@ -186,7 +206,8 @@ public:
     }
 
     static Eigen::VectorXd RandNorDistVec(const Eigen::VectorXd& mean, const Eigen::MatrixXd& cov) {
-        static std::mt19937 rng(std::random_device{}()); // Standard mersenne_twister_engine
+        static std::mt19937 rng(std::random_device{}());
+        std::normal_distribution<double> dist;
         if (mean.size() != cov.rows() || cov.rows() != cov.cols()) {
             throw std::invalid_argument("Mean vector size and covariance matrix dimensions must match.");
         }
@@ -195,12 +216,9 @@ public:
         if (lltOfCov.info() == Eigen::NumericalIssue) {
             throw std::runtime_error("Covariance matrix is not positive definite.");
         }
-        Eigen::MatrixXd L = lltOfCov.matrixL(); // Lower-triangular matrix
+        Eigen::MatrixXd L = lltOfCov.matrixL();
         // Generate a vector of standard normal random variables
-        Eigen::VectorXd z(mean.size());
-        for (int i = 0; i < z.size(); ++i) {
-            z(i) = RandNorDist();
-        }
+        Eigen::VectorXd z = Eigen::VectorXd::NullaryExpr(mean.size(), [&]() { return dist(rng); });
         return mean + L * z;
     }
 

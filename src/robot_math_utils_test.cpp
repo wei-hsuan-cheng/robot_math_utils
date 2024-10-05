@@ -14,8 +14,11 @@ int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
 
     // Create a ROS 2 node
-    auto node = rclcpp::Node::make_shared("test_robot_math_utils");
+    std::string node_name = "robot_math_utils_test";
+    auto node = rclcpp::Node::make_shared(node_name);
     std::cout << "\n----- Starting RMUtils tests -----\n" << std::endl;
+
+    const std::string& datalog_path = "./datalog/" + node_name;
 
     // // Test ConstrainedAngle
     // std::cout << "\n----- Test ConstrainedAngle -----\n" << std::endl;
@@ -30,6 +33,26 @@ int main(int argc, char** argv) {
     // double theta_rec = RM::ArcCos(cos_val, false);
     // std::cout << "theta_rec [deg] = " << theta_rec << std::endl;
     // std::cout << "theta_rec [rad] = " << theta_rec * RM::d2r << std::endl;
+
+    // Test RandNorDistVec for generating N = 100 data points
+    std::cout << "\n----- Test RandNorDistVec (Generating 100 data points) -----\n" << std::endl;
+    int N = 5000;  // Number of data points
+    VectorXd mean(2), std_dev(2);
+    mean << 1.0, 5.0;
+    std_dev << 0.5, 0.1;
+    MatrixXd cov = std_dev.asDiagonal() * RM::Transpose(std_dev.asDiagonal());
+    // Matrix to store all random vectors
+    Eigen::MatrixXd rand_vecs(N, mean.size());
+    // Generate N random vectors and store in the matrix
+    for (int i = 0; i < N; ++i) {
+        VectorXd rand_vec = RM::RandNorDistVec(mean, cov);
+        rand_vecs.row(i) = rand_vec.transpose();
+    }
+    // Save the generated data points to CSV
+    std::string filename = datalog_path + "/rand_vecs_" + std::to_string(N) + ".csv";
+    RM::SaveMat(rand_vecs, filename);
+    std::cout << "Random vectors saved to " << filename << std::endl;
+
 
     // // Test Euler angles (from quat to rot and convert back to zyx_euler)
     // std::cout << "\n----- Test Euler angles -----\n" << std::endl;
@@ -255,21 +278,21 @@ int main(int argc, char** argv) {
     // MatrixXd log_se3 = RM::MatrixLog6(exp_se3);
     // std::cout << "Matrix logarithm of SE(3):\n" << log_se3 << std::endl;
 
-    // Test ScrewMotion
-    std::cout << "\n----- Test ScrewMotion -----\n" << std::endl;
-    VectorXd pos_quat_b_e(7);
-    pos_quat_b_e << 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0;
-    VectorXd pos_quat_e_e_cmd = RM::R6Pose2PosQuat( (VectorXd(6) << 1.0, 2.0, 3.0, 0.0, 0.0, 0.75).finished() );
-    int N = 10;
-    double T = 5.0;
+    // // Test ScrewMotion
+    // std::cout << "\n----- Test ScrewMotion -----\n" << std::endl;
+    // VectorXd pos_quat_b_e(7);
+    // pos_quat_b_e << 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0;
+    // VectorXd pos_quat_e_e_cmd = RM::R6Pose2PosQuat( (VectorXd(6) << 1.0, 2.0, 3.0, 0.0, 0.0, 0.75).finished() );
+    // int N = 10;
+    // double T = 5.0;
     
-    // ScrewMotionTraj
-    auto[pos_quat_b_e_traj, t]  = RM::ScrewMotionTraj(pos_quat_b_e, pos_quat_e_e_cmd, N, T);
-    // Print trajectory
-    for (int i = 0; i < N; i++) {
-        std::cout << "t(" << i << ") [s] = " << t[i] << ", ";
-        RM::PrintVec(RM::PosQuat2R6Pose( pos_quat_b_e_traj[i] ), "pose_b_e_traj(" + std::to_string(i) + ")");
-    }
+    // // ScrewMotionTraj
+    // auto[pos_quat_b_e_traj, t]  = RM::ScrewMotionTraj(pos_quat_b_e, pos_quat_e_e_cmd, N, T);
+    // // Print trajectory
+    // for (int i = 0; i < N; i++) {
+    //     std::cout << "t(" << i << ") [s] = " << t[i] << ", ";
+    //     RM::PrintVec(RM::PosQuat2R6Pose( pos_quat_b_e_traj[i] ), "pose_b_e_traj(" + std::to_string(i) + ")");
+    // }
 
 
     
