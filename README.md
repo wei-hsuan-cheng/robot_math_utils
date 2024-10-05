@@ -193,7 +193,7 @@ ros2 run robot_math_utils robot_math_utils_test
 
 - `ErrorThreshold`: Check if the error is within a threshold.
 - `KpPosso3`: Cartesian position control and position-based visual servoing (PBVS).
-  
+
 ## Acknowledgements
 
 - **Modern Robotics**: Some functions are adapted from the [Modern Robotics book codebase](https://github.com/Le0nX/ModernRoboticsCpp).
