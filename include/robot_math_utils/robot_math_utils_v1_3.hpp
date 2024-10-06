@@ -333,11 +333,9 @@ public:
         for (size_t i = 1; i < quats.size(); ++i) {
             quat_init *= quats[i];
         }
-        quat_init.normalize(); // Normalize once at the end
+        // quat_init.normalize(); // Normalize once at the end
         return quat_init;
     }
-
-
 
     // Exp and Log maps in SO(3)
     static Matrix3d R3Vec2so3Mat(const Vector3d& v) {
@@ -375,7 +373,7 @@ public:
         Quaterniond q;
         q.w() = std::cos(half_theta);
         q.vec() = std::sin(half_theta) * axis_ang.head<3>();
-        q.normalize(); // Ensure unit quaternion
+        // q.normalize(); // Ensure unit quaternion
         return q;  // q = cos(theta/2) + sin(theta/2) * uhat
     }
 
@@ -438,7 +436,7 @@ public:
 
     static Quaterniond Rot2Quat(const Matrix3d& R) {
         Quaterniond q(R);
-        q.normalize();
+        // q.normalize();
         return q;
     }
 
@@ -530,7 +528,7 @@ public:
         Quaterniond qz(Eigen::AngleAxisd(z_angle, Vector3d::UnitZ()));
 
         Quaterniond q = qx * qy * qz;
-        q.normalize(); // Ensure the quaternion is normalized
+        // q.normalize(); // Ensure the quaternion is normalized
 
         return q;
     }
@@ -545,7 +543,7 @@ public:
         Quaterniond qx(Eigen::AngleAxisd(x_angle, Vector3d::UnitX()));
 
         Quaterniond q = qz * qy * qx;
-        q.normalize(); // Ensure the quaternion is normalized
+        // q.normalize(); // Ensure the quaternion is normalized
 
         return q;
     }
@@ -739,7 +737,7 @@ public:
         // Extract position and quaternion
         Vector3d p_1_2 = pos_quat_1_2.head<3>();
         Quaterniond q_1_2(pos_quat_1_2(3), pos_quat_1_2(4), pos_quat_1_2(5), pos_quat_1_2(6));
-        q_1_2.normalize(); // Ensure the quaternion is normalized
+        // q_1_2.normalize(); // Ensure the quaternion is normalized
         // Compute the inverse quaternion (conjugate for unit quaternions)
         Quaterniond q_2_1 = q_1_2.conjugate();
         // Rotate the position vector
@@ -764,12 +762,12 @@ public:
         // Extract quaternions as Quaterniond
         Quaterniond q_b_1(pos_quat_b_1(3), pos_quat_b_1(4), pos_quat_b_1(5), pos_quat_b_1(6));
         Quaterniond q_1_2(pos_quat_1_2(3), pos_quat_1_2(4), pos_quat_1_2(5), pos_quat_1_2(6));
-        q_b_1.normalize();
-        q_1_2.normalize();
+        // q_b_1.normalize();
+        // q_1_2.normalize();
 
         // Compute the new quaternion
         Quaterniond q_b_2 = q_b_1 * q_1_2;
-        q_b_2.normalize();
+        // q_b_2.normalize();
 
         // Rotate and translate the position
         Vector3d p_b_2 = q_b_1 * pos_quat_1_2.head<3>() + pos_quat_b_1.head<3>();
@@ -785,17 +783,6 @@ public:
         return pos_quat_b_2;
     }
 
-    // static Vector7d TransformPosQuats(const std::vector<Vector7d>& pos_quats) {
-    //     if (pos_quats.empty()) {
-    //         throw std::invalid_argument("The input list of poses is empty.");
-    //     }
-    //     Vector7d pos_quat_init_final = pos_quats[0]; // Initial pos_quat
-    //     for (std::size_t i = 1; i < pos_quats.size(); ++i) {
-    //         pos_quat_init_final = TransformPosQuat(pos_quat_init_final, pos_quats[i]);
-    //     }
-    //     return pos_quat_init_final;
-    // }
-
     static Vector7d TransformPosQuats(const std::vector<Vector7d>& pos_quats) {
         if (pos_quats.empty()) {
             throw std::invalid_argument("The input list of poses is empty.");
@@ -803,24 +790,18 @@ public:
         // Initialize accumulated position and quaternion with the first element
         Vector3d p_accum = pos_quats[0].head<3>();
         Quaterniond q_accum(pos_quats[0](3), pos_quats[0](4), pos_quats[0](5), pos_quats[0](6));
-        q_accum.normalize();
-
+        // q_accum.normalize();
         // Loop over the remaining pos_quats
         for (std::size_t i = 1; i < pos_quats.size(); ++i) {
             // Extract position and quaternion from the current pos_quat
             Quaterniond q_i(pos_quats[i](3), pos_quats[i](4), pos_quats[i](5), pos_quats[i](6));
-            q_i.normalize();
-
+            // q_i.normalize();
             // Rotate and translate the position
             p_accum = q_accum * pos_quats[i].head<3>() + p_accum;
-            
             // Compute the new quaternion
             q_accum *= q_i;
-            q_accum.normalize(); // Ensure the quaternion remains normalized
-
-            
+            // q_accum.normalize(); // Ensure the quaternion remains normalized
         }
-
         // Assemble the final pos_quat
         Vector7d pos_quat_final;
         pos_quat_final.head<3>() = p_accum;
@@ -828,10 +809,8 @@ public:
         pos_quat_final(4) = q_accum.x();
         pos_quat_final(5) = q_accum.y();
         pos_quat_final(6) = q_accum.z();
-
         return pos_quat_final;
     }
-
 
     static Vector7d PosQuats2RelativePosQuat(const Vector7d& pos_quat_b_1, const Vector7d& pos_quat_b_2) {
         return TransformPosQuat(InvPosQuat(pos_quat_b_1), pos_quat_b_2); // pos_quat_1_2
