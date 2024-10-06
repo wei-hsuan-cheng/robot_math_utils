@@ -411,6 +411,21 @@ public:
         return R_1_2;
     }
 
+    static Matrix3d TransformRot(const Matrix3d& R_1_2, const Matrix3d& R_2_3) {
+        return R_1_2 * R_2_3;
+    }
+
+    static Matrix3d TransformRots(const std::vector<Matrix3d>& Rs) {
+        if (Rs.empty()) {
+            throw std::invalid_argument("Input vector of rotation matrices is empty.");
+        }
+        Matrix3d result = Rs[0];
+        for (size_t i = 1; i < Rs.size(); ++i) {
+            result = result * Rs[i];
+        }
+        return result;
+    }
+    
     static Matrix3d so32Rot(const Vector3d& so3) {
         return MatrixExp3(R3Vec2so3Mat(so3));
     }
@@ -822,7 +837,7 @@ public:
 
     static Vector7d PosQuats2RelativePosQuat(const Vector7d& pos_quat_b_1, const Vector7d& pos_quat_b_2) {
         return TransformPosQuat(InvPosQuat(pos_quat_b_1), pos_quat_b_2); // pos_quat_1_2
-    }
+    }    
 
     // SE3 matrices
     static Matrix4d TransformSE3(const Matrix4d& SE3_1_2, const Matrix4d& SE3_2_3) {
