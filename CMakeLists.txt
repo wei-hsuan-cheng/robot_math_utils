@@ -27,9 +27,11 @@ include_directories(
 
 # Source files
 set(ROBOT_MATH_UTILS_TEST_SOURCES src/robot_math_utils_test.cpp)
+set(COMPARE_SE3_TRANSFORMS_SOURCES src/compare_SE3_transforms.cpp)
 
 # Add executable
 add_executable(robot_math_utils_test ${ROBOT_MATH_UTILS_TEST_SOURCES})
+add_executable(compare_SE3_transforms ${COMPARE_SE3_TRANSFORMS_SOURCES})
 
 # Link libraries
 ament_target_dependencies(robot_math_utils_test
@@ -37,9 +39,15 @@ ament_target_dependencies(robot_math_utils_test
   Eigen3
 )
 
+ament_target_dependencies(compare_SE3_transforms
+  rclcpp
+  Eigen3
+)
+
 # Install targets
 install(TARGETS
   robot_math_utils_test
+  compare_SE3_transforms
   DESTINATION lib/${PROJECT_NAME}
 )
 
