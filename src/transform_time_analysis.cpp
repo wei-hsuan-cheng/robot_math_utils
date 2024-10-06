@@ -11,13 +11,11 @@ using RM = RMUtils;
 using std::int64_t;
 
 struct PosQuat {
-    Eigen::Vector3d position;
-    Eigen::Quaterniond orientation;
-
-    PosQuat() : position(Eigen::Vector3d::Zero()), orientation(Eigen::Quaterniond::Identity()) {}
-
-    PosQuat(const Eigen::Vector3d& pos, const Eigen::Quaterniond& ori)
-        : position(pos), orientation(ori) {}
+    Vector3d pos;
+    Quaterniond quat;
+    PosQuat() : pos(Vector3d::Zero()), quat(Quaterniond::Identity()) {}
+    PosQuat(const Vector3d& pos, const Quaterniond& quat)
+        : pos(pos), quat(quat) {}
 };
 
 std::tuple<Quaterniond, int64_t, double> TransformQuats(const std::vector<Quaterniond>& quats) {
@@ -116,9 +114,9 @@ std::tuple<PosQuat, int64_t, double> TransformPosQuats(const std::vector<PosQuat
 
         auto start_pos_quat = std::chrono::high_resolution_clock::now();
         // Rotate and translate the position
-        pos_quat_accum.position = pos_quat_accum.orientation * pos_quat_i.position + pos_quat_accum.position;
+        pos_quat_accum.pos = pos_quat_accum.quat * pos_quat_i.pos + pos_quat_accum.pos;
         // Compute the new quaternion
-        pos_quat_accum.orientation *= pos_quat_i.orientation;
+        pos_quat_accum.quat *= pos_quat_i.quat;
         auto end_pos_quat = std::chrono::high_resolution_clock::now();
 
         int64_t duration_pos_quat = std::chrono::duration_cast<std::chrono::nanoseconds>(end_pos_quat - start_pos_quat).count();
@@ -212,7 +210,7 @@ int main(int argc, char** argv) {
     // Measure time for position + quaternion method
     auto [result_pos_quat, total_duration_pos_quat, avg_duration_pos_quat] = TransformPosQuats(pos_quats);
     Vector7d result_pos_quat_old_data_type;
-    result_pos_quat_old_data_type << result_pos_quat.position, result_pos_quat.orientation.w(), result_pos_quat.orientation.x(), result_pos_quat.orientation.y(), result_pos_quat.orientation.z();
+    result_pos_quat_old_data_type << result_pos_quat.pos, result_pos_quat.quat.w(), result_pos_quat.quat.x(), result_pos_quat.quat.y(), result_pos_quat.quat.z();
     // Measure time for homogeneous matrix method
     auto [result_SE3, total_duration_SE3, avg_duration_SE3] = TransformSE3s(SE3s);
 
