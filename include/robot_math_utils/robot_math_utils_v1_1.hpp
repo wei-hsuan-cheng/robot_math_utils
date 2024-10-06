@@ -767,8 +767,10 @@ public:
         return PosQuat2R6Pose( InvPosQuat( R6Pose2PosQuat(pose_1_2) ) );
     }
 
+
     // Transform poses and relative poses
-     static Eigen::VectorXd TransformPosQuat(const Eigen::VectorXd& pos_quat_b_1, const Eigen::VectorXd& pos_quat_1_2) {
+    // pos_quats
+    static Eigen::VectorXd TransformPosQuat(const Eigen::VectorXd& pos_quat_b_1, const Eigen::VectorXd& pos_quat_1_2) {
         if (pos_quat_b_1.size() != 7 || pos_quat_1_2.size() != 7) {
             throw std::invalid_argument("Each pose must have exactly 7 elements.");
         }
@@ -797,6 +799,30 @@ public:
         return TransformPosQuat(InvPosQuat(pos_quat_b_1), pos_quat_b_2); // pos_quat_1_2
     }
 
+
+    // SE3 matrices
+    static Eigen::MatrixXd TransformSE3(const Eigen::MatrixXd& SE3_1_2, const Eigen::MatrixXd& SE3_2_3) {
+        if (SE3_1_2.rows() != 4 || SE3_1_2.cols() != 4 || SE3_2_3.rows() != 4 || SE3_2_3.cols() != 4) {
+            throw std::invalid_argument("Each SE3 matrix must be 4x4.");
+        }
+        return SE3_1_2 * SE3_2_3;
+    }
+
+    static Eigen::MatrixXd TransformSE3s(const std::vector<Eigen::MatrixXd>& SE3s) {
+        if (SE3s.empty()) {
+            throw std::invalid_argument("Input vector of SE3 matrices is empty.");
+        } else if (SE3s[0].rows() != 4 || SE3s[0].cols() != 4) {
+            throw std::invalid_argument("Each SE3 matrix must be 4x4.");
+        }
+        Eigen::MatrixXd result = SE3s[0];
+        for (size_t i = 1; i < SE3s.size(); ++i) {
+            result = TransformSE3(result, SE3s[i]);
+        }
+        return result;
+    }
+
+
+    // 6D poses
     static Eigen::VectorXd TransformR6Pose(const Eigen::VectorXd& pose_b_1, const Eigen::VectorXd& pose_1_2) {
         if (pose_b_1.size() != 6 || pose_1_2.size() != 6) {
             throw std::invalid_argument("Each pose must have exactly 6 elements.");
