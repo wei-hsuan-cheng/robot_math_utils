@@ -89,6 +89,7 @@ ros2 run robot_math_utils robot_math_utils_test
 - `PrintVec`: Print an Eigen vector with a name.
 - `InitDatalog`: Initialise a CSV file for data logging.
 - `Datalog`: Log data vectors to a CSV file with timestamp and index.
+- `SaveMat`: Log matrix to a CSV file.
 
 ### Numerical Conditions
 

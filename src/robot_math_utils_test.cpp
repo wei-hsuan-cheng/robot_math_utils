@@ -34,26 +34,32 @@ int main(int argc, char** argv) {
     // std::cout << "theta_rec [deg] = " << theta_rec << std::endl;
     // std::cout << "theta_rec [rad] = " << theta_rec * RM::d2r << std::endl;
 
-    // Test RandNorDistVec for generating N = 100 data points
-    std::cout << "\n----- Test RandNorDistVec (Generating 100 data points) -----\n" << std::endl;
-    int N = 5000;  // Number of data points
-    VectorXd mean(2), std_dev(2);
-    mean << 1.0, 5.0;
-    std_dev << 0.5, 0.1;
-    MatrixXd cov = std_dev.asDiagonal() * RM::Transpose(std_dev.asDiagonal());
-    // Matrix to store all random vectors
-    Eigen::MatrixXd rand_vecs(N, mean.size());
-    // Generate N random vectors and store in the matrix
-    for (int i = 0; i < N; ++i) {
-        VectorXd rand_vec = RM::RandNorDistVec(mean, cov);
-        rand_vecs.row(i) = rand_vec.transpose();
-    }
-    // Save the generated data points to CSV
-    std::string filename = datalog_path + "/rand_vecs_" + std::to_string(N) + ".csv";
-    RM::SaveMat(rand_vecs, filename);
-    std::cout << "Random vectors saved to " << filename << std::endl;
+    
+    // // Test RandNorDistVec for generating N = 100 data points
+    // std::cout << "\n----- Test RandNorDistVec (Generating 100 data points) -----\n" << std::endl;
+    // int N = 5000;  // Number of data points
+    // VectorXd mean(2), std_dev(2);
+    // mean << 1.0, 5.0;
+    // std_dev << 0.5, 0.1;
+    // MatrixXd cov = std_dev.asDiagonal() * RM::Transpose(std_dev.asDiagonal());
+    // // Matrix to store all random vectors
+    // Eigen::MatrixXd rand_vecs(N, mean.size());
+    // // Generate N random vectors and store in the matrix
+    // for (int i = 0; i < N; ++i) {
+    //     VectorXd rand_vec = RM::RandNorDistVec(mean, cov);
+    //     rand_vecs.row(i) = rand_vec.transpose();
+    // }
+    // // Save the generated data points to CSV
+    // std::string filename = datalog_path + "/rand_vecs_" + std::to_string(N) + ".csv";
+    // RM::SaveMat(rand_vecs, filename);
+    // std::cout << "Random vectors saved to " << filename << std::endl;
 
 
+    // Test quat with z-axis pi rotation
+    std::cout << "\n----- Test quat with z-axis pi rotation -----\n" << std::endl;
+    Vector4d quat = RM::Quatz(M_PI);
+    std::cout << "quat = [" << quat.transpose() << "]" << std::endl;
+    
     // // Test Euler angles (from quat to rot and convert back to zyx_euler)
     // std::cout << "\n----- Test Euler angles -----\n" << std::endl;
     // Vector3d zyx_euler(30, 15, 45);
