@@ -2,7 +2,7 @@
 #define RM_UTILS_HPP
 
 // Author: Wei-Hsuan Cheng, johnathancheng0125@gmail.com, https://github.com/wei-hsuan-cheng
-// ver_1.2, last edit: 241006
+// ver_1.3, last edit: 241006
 // Some functions are adapted from the Modern Robotics book codebase: https://github.com/Le0nX/ModernRoboticsCpp/tree/eacdf8800bc591b03727512c102d2c5dffe78cec
 
 #include <Eigen/Dense>
@@ -319,34 +319,27 @@ public:
 
     // SO(3) and so(3) functions (quaternions as main representation)
     // Quaternion operations
-    static Vector4d QuatMul(const Vector4d& q, const Vector4d& p) {
-        Quaterniond q_quat(q(0), q(1), q(2), q(3));
-        Quaterniond p_quat(p(0), p(1), p(2), p(3));
-        Quaterniond qp_quat = q_quat * p_quat;
-        qp_quat.normalize(); // Ensure the result is a unit quaternion
-        return Vector4d(qp_quat.w(), qp_quat.x(), qp_quat.y(), qp_quat.z());
+    static Quaterniond ConjQuat(const Quaterniond& quat) {
+        return quat.conjugate();
     }
 
-    static Vector4d ConjQuat(const Vector4d& quat) {
-        return Vector4d(quat(0), -quat(1), -quat(2), -quat(3));
+    static Quaterniond InvQuat(const Quaterniond& quat) {
+        return quat.conjugate(); // Inverse of a unit quaternion is its conjugate
     }
 
-    static Vector4d InvQuat(const Vector4d& quat) {
-        return ConjQuat(quat); // Inverse of a unit quaternion is its conjugate
-    }
-
-    static Vector4d TransformQuats(const std::vector<Vector4d>& quats) {
+    static Quaterniond TransformQuats(const std::vector<Quaterniond>& quats) {
         if (quats.empty()) {
             throw std::invalid_argument("The input list of quaternions is empty.");
         }
-        Quaterniond quat_init(quats[0](0), quats[0](1), quats[0](2), quats[0](3));
+        Quaterniond quat_init = quats[0];
         for (size_t i = 1; i < quats.size(); ++i) {
-            Quaterniond quat_i(quats[i](0), quats[i](1), quats[i](2), quats[i](3));
-            quat_init = quat_init * quat_i;
-            quat_init.normalize();
+            quat_init *= quats[i];
         }
-        return Vector4d(quat_init.w(), quat_init.x(), quat_init.y(), quat_init.z());
+        quat_init.normalize(); // Normalize once at the end
+        return quat_init;
     }
+
+
 
     // Exp and Log maps in SO(3)
     static Matrix3d R3Vec2so3Mat(const Vector3d& v) {
@@ -373,21 +366,20 @@ public:
         return v; // {uhat_x, uhat_y, uhat_z, theta}
     }
 
-
-    static Vector3d Quat2so3(const Vector4d& quat) {
-        double theta = 2 * ArcCos(quat(0), true);
-        return (2 / Sinc(theta / 2)) * quat.tail<3>();
+    static Vector3d Quat2so3(const Quaterniond& quat) {
+        double theta = 2 * ArcCos( ( quat.w() > 0 ? quat.w() : -quat.w() ) , true);
+        return (2 / Sinc(theta / 2)) * ( quat.w() > 0 ? Vector3d(quat.vec()) : Vector3d(-quat.vec()) );
     }
 
-    static Vector4d so32Quat(const Vector3d& so3) {
+    static Quaterniond so32Quat(const Vector3d& so3) {
         Vector4d axis_ang = AxisAng3(so3);
         double half_theta = axis_ang(3) / 2;
-        Vector4d quat;
-        quat(0) = std::cos(half_theta);
-        quat.tail<3>() = std::sin(half_theta) * axis_ang.head<3>();
-        return quat; // q = cos(theta/2) + sin(theta/2) * uhat
+        Quaterniond q;
+        q.w() = std::cos(half_theta);
+        q.vec() = std::sin(half_theta) * axis_ang.head<3>();
+        q.normalize(); // Ensure unit quaternion
+        return q;  // q = cos(theta/2) + sin(theta/2) * uhat
     }
-
 
     static Matrix3d MatrixExp3(const Matrix3d& so3Mat) {
         Vector3d so3 = so3Mat2R3Vec(so3Mat);
@@ -427,14 +419,14 @@ public:
         return so3Mat2R3Vec(MatrixLog3(R));
     }
 
-    static Matrix3d Quat2Rot(const Vector4d& quat) {
-        Quaterniond q(quat(0), quat(1), quat(2), quat(3));
-        return q.normalized().toRotationMatrix();
+    static Matrix3d Quat2Rot(const Quaterniond& quat) {
+        return quat.normalized().toRotationMatrix();
     }
 
-    static Vector4d Rot2Quat(const Matrix3d& R) {
+    static Quaterniond Rot2Quat(const Matrix3d& R) {
         Quaterniond q(R);
-        return Vector4d(q.w(), q.x(), q.y(), q.z());
+        q.normalize();
+        return q;
     }
 
     // ZYX Euler angles
@@ -494,31 +486,28 @@ public:
         return Vector3d(thz, thy, thx);
     }
 
-    static Vector4d Quatx(double thx, bool rad = true) {
+    static Quaterniond Quatx(double thx, bool rad = true) {
         if (!rad) {
             thx *= d2r;
         }
-        Quaterniond q(Eigen::AngleAxisd(thx, Vector3d::UnitX()));
-        return Vector4d(q.w(), q.x(), q.y(), q.z());
+        return Quaterniond(Eigen::AngleAxisd(thx, Vector3d::UnitX()));
     }
 
-    static Vector4d Quaty(double thy, bool rad = true) {
+    static Quaterniond Quaty(double thy, bool rad = true) {
         if (!rad) {
             thy *= d2r;
         }
-        Quaterniond q(Eigen::AngleAxisd(thy, Vector3d::UnitY()));
-        return Vector4d(q.w(), q.x(), q.y(), q.z());
+        return Quaterniond(Eigen::AngleAxisd(thy, Vector3d::UnitY()));
     }
 
-    static Vector4d Quatz(double thz, bool rad = true) {
+    static Quaterniond Quatz(double thz, bool rad = true) {
         if (!rad) {
             thz *= d2r;
         }
-        Quaterniond q(Eigen::AngleAxisd(thz, Vector3d::UnitZ()));
-        return Vector4d(q.w(), q.x(), q.y(), q.z());
+        return Quaterniond(Eigen::AngleAxisd(thz, Vector3d::UnitZ()));
     }
 
-    static Vector4d xyzEuler2Quat(const Vector3d& xyz_euler, bool rad = true) {
+    static Quaterniond xyzEuler2Quat(const Vector3d& xyz_euler, bool rad = true) {
         double x_angle = rad ? xyz_euler(0) : xyz_euler(0) * d2r;
         double y_angle = rad ? xyz_euler(1) : xyz_euler(1) * d2r;
         double z_angle = rad ? xyz_euler(2) : xyz_euler(2) * d2r;
@@ -530,10 +519,10 @@ public:
         Quaterniond q = qx * qy * qz;
         q.normalize(); // Ensure the quaternion is normalized
 
-        return Vector4d(q.w(), q.x(), q.y(), q.z());
+        return q;
     }
 
-    static Vector4d zyxEuler2Quat(const Vector3d& zyx_euler, bool rad = true) {
+    static Quaterniond zyxEuler2Quat(const Vector3d& zyx_euler, bool rad = true) {
         double z_angle = rad ? zyx_euler(0) : zyx_euler(0) * d2r;
         double y_angle = rad ? zyx_euler(1) : zyx_euler(1) * d2r;
         double x_angle = rad ? zyx_euler(2) : zyx_euler(2) * d2r;
@@ -545,19 +534,12 @@ public:
         Quaterniond q = qz * qy * qx;
         q.normalize(); // Ensure the quaternion is normalized
 
-        return Vector4d(q.w(), q.x(), q.y(), q.z());
+        return q;
     }
 
-    static Vector3d Quat2zyxEuler(const Vector4d& quat, bool rad = true) {
-        Quaterniond q(quat(0), quat(1), quat(2), quat(3));
-        Matrix3d R = q.normalized().toRotationMatrix();
+    static Vector3d Quat2zyxEuler(const Quaterniond& quat, bool rad = true) {
+        Matrix3d R = quat.normalized().toRotationMatrix();
         return Rot2zyxEuler(R, rad);
-    }
-
-    // Rotate vectors
-    static Vector3d RotateR3VecFromQuat(const Vector3d& r3_vec, const Vector4d& quat) {
-        Quaterniond q(quat(0), quat(1), quat(2), quat(3));
-        return q.normalized() * r3_vec;
     }
 
     // SE(3) and se(3) functions
@@ -636,14 +618,19 @@ public:
     static Vector6d PosQuat2R6Pose(const Vector7d& pos_quat_1_2) {
         Vector6d pose_1_2;
         pose_1_2.head<3>() = pos_quat_1_2.head<3>();
-        pose_1_2.tail<3>() = Rot2zyxEuler(Quat2Rot(pos_quat_1_2.tail<4>()), true).reverse();
+        Quaterniond q(pos_quat_1_2(3), pos_quat_1_2(4), pos_quat_1_2(5), pos_quat_1_2(6));
+        pose_1_2.tail<3>() = Rot2zyxEuler(Quat2Rot(q), true).reverse();
         return pose_1_2;
     }
 
     static Vector7d R6Pose2PosQuat(const Vector6d& pose_1_2) {
         Vector7d pos_quat_1_2;
         pos_quat_1_2.head<3>() = pose_1_2.head<3>();
-        pos_quat_1_2.tail<4>() = zyxEuler2Quat(pose_1_2.tail<3>().reverse(), true);
+        Quaterniond q = zyxEuler2Quat(pose_1_2.tail<3>().reverse(), true);
+        pos_quat_1_2(3) = q.w();
+        pos_quat_1_2(4) = q.x();
+        pos_quat_1_2(5) = q.y();
+        pos_quat_1_2(6) = q.z();
         return pos_quat_1_2;
     }
 
@@ -651,21 +638,29 @@ public:
     static Vector6d PosQuat2Posso3(const Vector7d& pos_quat_1_2) {
         Vector6d pos_so3_1_2;
         pos_so3_1_2.head<3>() = pos_quat_1_2.head<3>();
-        pos_so3_1_2.tail<3>() = Quat2so3(pos_quat_1_2.tail<4>());
+        Quaterniond q(pos_quat_1_2(3), pos_quat_1_2(4), pos_quat_1_2(5), pos_quat_1_2(6));
+        pos_so3_1_2.tail<3>() = Quat2so3(q);
         return pos_so3_1_2;
     }
 
     static Vector7d Posso32PosQuat(const Vector6d& pos_so3_1_2) {
+        Vector3d position = pos_so3_1_2.head<3>();
+        Vector3d so3 = pos_so3_1_2.tail<3>();
+        Quaterniond q = so32Quat(so3);
         Vector7d pos_quat_1_2;
-        pos_quat_1_2.head<3>() = pos_so3_1_2.head<3>();
-        pos_quat_1_2.tail<4>() = so32Quat(pos_so3_1_2.tail<3>());
+        pos_quat_1_2.head<3>() = position;
+        pos_quat_1_2(3) = q.w();
+        pos_quat_1_2(4) = q.x();
+        pos_quat_1_2(5) = q.y();
+        pos_quat_1_2(6) = q.z();
         return pos_quat_1_2;
     }
 
     // pos_quat <-> SE(3) matrix
     static Matrix4d PosQuat2SE3(const Vector7d& pos_quat_1_2) {
         Matrix4d T_1_2 = Matrix4d::Identity();
-        T_1_2.topLeftCorner<3, 3>() = Quat2Rot(pos_quat_1_2.tail<4>());
+        Quaterniond q(pos_quat_1_2(3), pos_quat_1_2(4), pos_quat_1_2(5), pos_quat_1_2(6));
+        T_1_2.topLeftCorner<3, 3>() = Quat2Rot(q);
         T_1_2.topRightCorner<3, 1>() = pos_quat_1_2.head<3>();
         return T_1_2;
     }
@@ -673,7 +668,11 @@ public:
     static Vector7d SE32PosQuat(const Matrix4d& T_1_2) {
         Vector7d pos_quat_1_2;
         pos_quat_1_2.head<3>() = T_1_2.topRightCorner<3, 1>();
-        pos_quat_1_2.tail<4>() = Rot2Quat(T_1_2.topLeftCorner<3, 3>());
+        Quaterniond q = Rot2Quat(T_1_2.topLeftCorner<3, 3>());
+        pos_quat_1_2(3) = q.w();
+        pos_quat_1_2(4) = q.x();
+        pos_quat_1_2(5) = q.y();
+        pos_quat_1_2(6) = q.z();
         return pos_quat_1_2;
     }
 
@@ -724,9 +723,21 @@ public:
 
     // Inverse transformations
     static Vector7d InvPosQuat(const Vector7d& pos_quat_1_2) {
+        // Extract position and quaternion
+        Vector3d p_1_2 = pos_quat_1_2.head<3>();
+        Quaterniond q_1_2(pos_quat_1_2(3), pos_quat_1_2(4), pos_quat_1_2(5), pos_quat_1_2(6));
+        q_1_2.normalize(); // Ensure the quaternion is normalized
+        // Compute the inverse quaternion (conjugate for unit quaternions)
+        Quaterniond q_2_1 = q_1_2.conjugate();
+        // Rotate the position vector
+        Vector3d p_2_1 = -(q_2_1 * p_1_2);
+        // Assemble the inverse pos_quat
         Vector7d pos_quat_2_1;
-        pos_quat_2_1.head<3>() = -RotateR3VecFromQuat(pos_quat_1_2.head<3>(), InvQuat(pos_quat_1_2.tail<4>()));
-        pos_quat_2_1.tail<4>() = InvQuat(pos_quat_1_2.tail<4>());
+        pos_quat_2_1.head<3>() = p_2_1;
+        pos_quat_2_1(3) = q_2_1.w();
+        pos_quat_2_1(4) = q_2_1.x();
+        pos_quat_2_1(5) = q_2_1.y();
+        pos_quat_2_1(6) = q_2_1.z();
         return pos_quat_2_1;
     }
 
@@ -737,23 +748,77 @@ public:
     // Transform poses and relative poses
     // pos_quats
     static Vector7d TransformPosQuat(const Vector7d& pos_quat_b_1, const Vector7d& pos_quat_1_2) {
-        Vector4d quat_b_2 = QuatMul(pos_quat_b_1.tail<4>(), pos_quat_1_2.tail<4>());
-        Vector3d p_b_2 = RotateR3VecFromQuat(pos_quat_1_2.head<3>(), pos_quat_b_1.tail<4>()) + pos_quat_b_1.head<3>();
+        // Extract quaternions as Quaterniond
+        Quaterniond q_b_1(pos_quat_b_1(3), pos_quat_b_1(4), pos_quat_b_1(5), pos_quat_b_1(6));
+        Quaterniond q_1_2(pos_quat_1_2(3), pos_quat_1_2(4), pos_quat_1_2(5), pos_quat_1_2(6));
+        q_b_1.normalize();
+        q_1_2.normalize();
+
+        // Compute the new quaternion
+        Quaterniond q_b_2 = q_b_1 * q_1_2;
+        q_b_2.normalize();
+
+        // Rotate and translate the position
+        Vector3d p_b_2 = q_b_1 * pos_quat_1_2.head<3>() + pos_quat_b_1.head<3>();
+
+        // Assemble the new pos_quat
         Vector7d pos_quat_b_2;
-        pos_quat_b_2 << p_b_2, quat_b_2;
+        pos_quat_b_2.head<3>() = p_b_2;
+        pos_quat_b_2(3) = q_b_2.w();
+        pos_quat_b_2(4) = q_b_2.x();
+        pos_quat_b_2(5) = q_b_2.y();
+        pos_quat_b_2(6) = q_b_2.z();
+
         return pos_quat_b_2;
     }
+
+    // static Vector7d TransformPosQuats(const std::vector<Vector7d>& pos_quats) {
+    //     if (pos_quats.empty()) {
+    //         throw std::invalid_argument("The input list of poses is empty.");
+    //     }
+    //     Vector7d pos_quat_init_final = pos_quats[0]; // Initial pos_quat
+    //     for (std::size_t i = 1; i < pos_quats.size(); ++i) {
+    //         pos_quat_init_final = TransformPosQuat(pos_quat_init_final, pos_quats[i]);
+    //     }
+    //     return pos_quat_init_final;
+    // }
 
     static Vector7d TransformPosQuats(const std::vector<Vector7d>& pos_quats) {
         if (pos_quats.empty()) {
             throw std::invalid_argument("The input list of poses is empty.");
         }
-        Vector7d pos_quat_init_final = pos_quats[0]; // Initial pos_quat
+        // Initialize accumulated position and quaternion with the first element
+        Vector3d p_accum = pos_quats[0].head<3>();
+        Quaterniond q_accum(pos_quats[0](3), pos_quats[0](4), pos_quats[0](5), pos_quats[0](6));
+        q_accum.normalize();
+
+        // Loop over the remaining pos_quats
         for (std::size_t i = 1; i < pos_quats.size(); ++i) {
-            pos_quat_init_final = TransformPosQuat(pos_quat_init_final, pos_quats[i]);
+            // Extract position and quaternion from the current pos_quat
+            Quaterniond q_i(pos_quats[i](3), pos_quats[i](4), pos_quats[i](5), pos_quats[i](6));
+            q_i.normalize();
+
+            // Rotate and translate the position
+            p_accum = q_accum * pos_quats[i].head<3>() + p_accum;
+            
+            // Compute the new quaternion
+            q_accum *= q_i;
+            q_accum.normalize(); // Ensure the quaternion remains normalized
+
+            
         }
-        return pos_quat_init_final;
+
+        // Assemble the final pos_quat
+        Vector7d pos_quat_final;
+        pos_quat_final.head<3>() = p_accum;
+        pos_quat_final(3) = q_accum.w();
+        pos_quat_final(4) = q_accum.x();
+        pos_quat_final(5) = q_accum.y();
+        pos_quat_final(6) = q_accum.z();
+
+        return pos_quat_final;
     }
+
 
     static Vector7d PosQuats2RelativePosQuat(const Vector7d& pos_quat_b_1, const Vector7d& pos_quat_b_2) {
         return TransformPosQuat(InvPosQuat(pos_quat_b_1), pos_quat_b_2); // pos_quat_1_2

@@ -1,5 +1,5 @@
 #include <rclcpp/rclcpp.hpp>
-#include "robot_math_utils/robot_math_utils_v1_2.hpp"
+#include "robot_math_utils/robot_math_utils_v1_3.hpp"
 
 #include <Eigen/Dense>
 #include <chrono>
@@ -35,24 +35,22 @@ int main(int argc, char** argv) {
     std::vector<Matrix4d> SE3s;      // Use Matrix4d instead of Eigen::MatrixXd
     std::mt19937 rng(std::random_device{}());
     std::uniform_real_distribution<double> pos_dist(-1.0, 1.0);     // Position between -1 and 1
-    std::uniform_real_distribution<double> angle_dist(-M_PI, M_PI); // Angle between -pi and pi
+    std::uniform_real_distribution<double> so3_dist(-M_PI, M_PI); // Angle between -pi and pi
 
     for (int i = 0; i < N; ++i) {
         // Random position and so3
         Vector3d position(pos_dist(rng), pos_dist(rng), pos_dist(rng));
-        Vector3d axis(pos_dist(rng), pos_dist(rng), pos_dist(rng));
-        if (axis.norm() == 0) {
-            axis = Vector3d(1, 0, 0); // Avoid zero axis
+        Vector3d so3(so3_dist(rng), so3_dist(rng), so3_dist(rng));
+        if (so3.norm() == 0) {
+            so3 = Vector3d(1, 0, 0); // Avoid zero axis
         } else {
-            axis.normalize();
+            so3.normalize();
         }
-        double angle = angle_dist(rng);
-        Vector3d so3 = axis * angle;
-        // Convert so3 to quaternion
-        Vector4d quaternion = RM::so32Quat(so3);
+        Vector6d pos_so3;
+        pos_so3 << position, so3;
         // pos_quat
         Vector7d pos_quat; // Use Vector7d
-        pos_quat << position, quaternion;
+        pos_quat = RM::Posso32PosQuat(pos_so3);
         Matrix4d SE3 = RM::PosQuat2SE3(pos_quat);
         pos_quats.push_back(pos_quat);
         SE3s.push_back(SE3);
@@ -61,12 +59,17 @@ int main(int argc, char** argv) {
     // Measure time for position + quaternion method
     auto start = std::chrono::high_resolution_clock::now();
     Vector7d result_pos_quat = RM::TransformPosQuats(pos_quats);
+    Vector6d result_pos_so3_from_quat = RM::PosQuat2Posso3(result_pos_quat);
+    Quaterniond result_quat(result_pos_quat(3), result_pos_quat(4), result_pos_quat(5), result_pos_quat(6));
+    Vector4d axis_ang_from_quat = RM::AxisAng3( RM::Quat2so3(result_quat) );
     auto end = std::chrono::high_resolution_clock::now();
     auto duration_pos_quat = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
     // Measure time for homogeneous matrix method
     start = std::chrono::high_resolution_clock::now();
     Matrix4d result_SE3 = RM::TransformSE3s(SE3s);
+    Vector6d result_pos_so3_from_SE3 = RM::SE32Posso3(result_SE3);
+    Vector4d axis_ang_from_SE3 = RM::AxisAng3( RM::Rot2so3(result_SE3.block<3,3>(0,0)) );
     end = std::chrono::high_resolution_clock::now();
     auto duration_SE3 = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
@@ -75,7 +78,10 @@ int main(int argc, char** argv) {
     std::cout << "Number of transformations: " << N << std::endl;
     std::cout << "result_pos_so3_from_quat = " << RM::PosQuat2Posso3(result_pos_quat).transpose() << std::endl;
     std::cout << "result_pos_so3_from_SE3 = " << RM::SE32Posso3(result_SE3).transpose() << std::endl;
-    std::cout << "Difference between the two results [m, rad] = " << (RM::PosQuat2Posso3(result_pos_quat) - RM::SE32Posso3(result_SE3)).norm() << std::endl;
+    std::cout << "axis_ang_from_quat = [axis, deg] = " << axis_ang_from_quat(0) << ", " << axis_ang_from_quat(1) << ", " << axis_ang_from_quat(2) << ", " << axis_ang_from_quat(3) * RM::r2d << std::endl;
+    std::cout << "axis_ang_from_SE3 = [axis, deg] = " << axis_ang_from_SE3(0) << ", " << axis_ang_from_SE3(1) << ", " << axis_ang_from_SE3(2) << ", " << axis_ang_from_SE3(3) * RM::r2d << std::endl;
+    
+    // std::cout << "Difference between the two results [m, rad] = " << (RM::PosQuat2Posso3(result_pos_quat) - RM::SE32Posso3(result_SE3)).norm() << std::endl;
     // Output the timings 
     std::cout << "\n----- Time elapsed -----" << std::endl;
     std::cout << "PosQuat transform time (avg)  = " << static_cast<double>(duration_pos_quat) / static_cast<double>(N) << " [us]" << std::endl;
