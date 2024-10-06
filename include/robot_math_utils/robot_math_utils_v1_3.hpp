@@ -18,17 +18,15 @@
 #include <unsupported/Eigen/MatrixFunctions>  // For matrix logarithm and exponential
 #include <iostream>
 
+using Eigen::Quaterniond;
 using Eigen::Matrix3d;
 using Eigen::Matrix4d;
-using Eigen::MatrixXd;
+using Matrix6d = Eigen::Matrix<double, 6, 6>;
 using Eigen::Vector2d;
 using Eigen::Vector3d;
 using Eigen::Vector4d;
-using Eigen::VectorXd;
-using Eigen::Quaterniond;
 using Vector6d = Eigen::Matrix<double, 6, 1>;
 using Vector7d = Eigen::Matrix<double, 7, 1>;
-using Matrix6d = Eigen::Matrix<double, 6, 6>;
 
 class RMUtils {
 public:
@@ -425,7 +423,7 @@ public:
         }
         return result;
     }
-    
+
     static Matrix3d so32Rot(const Vector3d& so3) {
         return MatrixExp3(R3Vec2so3Mat(so3));
     }

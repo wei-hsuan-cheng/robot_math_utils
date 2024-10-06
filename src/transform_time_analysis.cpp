@@ -6,24 +6,16 @@
 #include <random>
 #include <vector>
 
-using Eigen::Matrix3d;
-using Eigen::Vector3d;
-using Eigen::Matrix4d;
-using Eigen::Vector4d;
 using RM = RMUtils;
-
-// Include the fixed-size types from RMUtils
-using Vector6d = Eigen::Matrix<double, 6, 1>;
-using Vector7d = Eigen::Matrix<double, 7, 1>;
 
 int main(int argc, char** argv) {
     // Initialize ROS 2
     rclcpp::init(argc, argv);
 
     // Create a ROS 2 node
-    std::string node_name = "compare_SE3_transforms";
+    std::string node_name = "transform_time_analysis";
     auto node = rclcpp::Node::make_shared(node_name);
-    std::cout << "\n----- Starting comparing SE(3) transforms -----\n" << std::endl;
+    std::cout << "\n----- Comparing time elapsed in different transformation methods  -----\n" << std::endl;
 
     const std::string& datalog_path = "./datalog/" + node_name;
 
@@ -36,7 +28,7 @@ int main(int argc, char** argv) {
     std::vector<Vector7d> pos_quats; 
     std::vector<Matrix4d> SE3s;      
     std::mt19937 rng(std::random_device{}());
-    std::uniform_real_distribution<double> pos_dist(-1.0, 1.0);     // Position between -1 and 1
+    std::uniform_real_distribution<double> pos_dist(-1.0, 1.0);   // Position between -1 and 1
     std::uniform_real_distribution<double> so3_dist(-M_PI, M_PI); // Angle between -pi and pi
 
     for (int i = 0; i < N; ++i) {
@@ -48,6 +40,7 @@ int main(int argc, char** argv) {
         } else {
             so3.normalize();
         }
+        
         Quaterniond quat = RM::so32Quat(so3);
         Matrix3d Rot = RM::so32Rot(so3);
         quats.push_back(quat);
@@ -62,51 +55,53 @@ int main(int argc, char** argv) {
     }    
 
     // Measure time for quaternion method
-    auto start = std::chrono::high_resolution_clock::now();
+    auto start_quat = std::chrono::high_resolution_clock::now();
     Quaterniond result_quat = RM::TransformQuats(quats);
-    Vector3d result_so3_from_quat = RM::Quat2so3(result_quat);
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration_quat = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    // Vector3d result_so3_from_quat = RM::Quat2so3(result_quat);
+    auto end_quat = std::chrono::high_resolution_clock::now();
+    auto duration_quat = std::chrono::duration_cast<std::chrono::microseconds>(end_quat - start_quat).count();
 
     // Measure time for rotation matrix method
-    start = std::chrono::high_resolution_clock::now();
+    auto start_rot = std::chrono::high_resolution_clock::now();
     Matrix3d result_rot = RM::TransformRots(Rots);
-    Vector3d result_so3_from_rot = RM::Rot2so3(result_rot);
-    end = std::chrono::high_resolution_clock::now();
-    auto duration_rot = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    // Vector3d result_so3_from_rot = RM::Rot2so3(result_rot);
+    auto end_rot = std::chrono::high_resolution_clock::now();
+    auto duration_rot = std::chrono::duration_cast<std::chrono::microseconds>(end_rot - start_rot).count();
 
     // Measure time for position + quaternion method
-    start = std::chrono::high_resolution_clock::now();
+    auto start_pos_quat = std::chrono::high_resolution_clock::now();
     Vector7d result_pos_quat = RM::TransformPosQuats(pos_quats);
-    Vector6d result_pos_so3_from_quat = RM::PosQuat2Posso3(result_pos_quat);
-    end = std::chrono::high_resolution_clock::now();
-    auto duration_pos_quat = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    // Vector6d result_pos_so3_from_quat = RM::PosQuat2Posso3(result_pos_quat);
+    auto end_pos_quat = std::chrono::high_resolution_clock::now();
+    auto duration_pos_quat = std::chrono::duration_cast<std::chrono::microseconds>(end_pos_quat - start_pos_quat).count();
 
     // Measure time for homogeneous matrix method
-    start = std::chrono::high_resolution_clock::now();
+    auto start_SE3 = std::chrono::high_resolution_clock::now();
     Matrix4d result_SE3 = RM::TransformSE3s(SE3s);
-    Vector6d result_pos_so3_from_SE3 = RM::SE32Posso3(result_SE3);
-    end = std::chrono::high_resolution_clock::now();
-    auto duration_SE3 = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    // Vector6d result_pos_so3_from_SE3 = RM::SE32Posso3(result_SE3);
+    auto end_SE3 = std::chrono::high_resolution_clock::now();
+    auto duration_SE3 = std::chrono::duration_cast<std::chrono::microseconds>(end_SE3 - start_SE3).count();
 
     // Print results
     std::cout << "\n----- Results for SO(3) -----" << std::endl;
     std::cout << "Number of rotations: " << N << std::endl;
-    std::cout << "result_so3_from_quat = " << result_so3_from_quat.transpose() << std::endl;
-    std::cout << "result_so3_from_rot = " << result_so3_from_rot.transpose() << std::endl;
-    
+    // std::cout << "result_so3_from_quat = " << result_so3_from_quat.transpose() << std::endl;
+    // std::cout << "result_so3_from_rot = " << result_so3_from_rot.transpose() << std::endl;
     std::cout << "\n----- Time elapsed -----" << std::endl;
+    std::cout << "Quaternion transform total time = " << duration_quat << " [us]" << std::endl;
     std::cout << "Quaternion transform time (avg) = " << static_cast<double>(duration_quat) / static_cast<double>(N) << " [us]" << std::endl;
+    std::cout << "Rotation matrix transform total time = " << duration_rot << " [us]" << std::endl;
     std::cout << "Rotation matrix transform time (avg) = " << static_cast<double>(duration_rot) / static_cast<double>(N) << " [us]" << std::endl;
 
 
     std::cout << "\n----- Results for SE(3) -----" << std::endl;
     std::cout << "Number of transformations: " << N << std::endl;
-    std::cout << "result_pos_so3_from_quat = " << RM::PosQuat2Posso3(result_pos_quat).transpose() << std::endl;
-    std::cout << "result_pos_so3_from_SE3 = " << RM::SE32Posso3(result_SE3).transpose() << std::endl;
-    
+    // std::cout << "result_pos_so3_from_pos_quat = " << RM::PosQuat2Posso3(result_pos_quat).transpose() << std::endl;
+    // std::cout << "result_pos_so3_from_SE3 = " << RM::SE32Posso3(result_SE3).transpose() << std::endl;
     std::cout << "\n----- Time elapsed -----" << std::endl;
+    std::cout << "PosQuat transform total time = " << duration_pos_quat << " [us]" << std::endl;
     std::cout << "PosQuat transform time (avg)  = " << static_cast<double>(duration_pos_quat) / static_cast<double>(N) << " [us]" << std::endl;
+    std::cout << "SE3 matrix transform total time = " << duration_SE3 << " [us]" << std::endl;
     std::cout << "SE3 matrix transform time (avg) = " << static_cast<double>(duration_SE3) / static_cast<double>(N) << " [us]" << std::endl;
 
     // Shutdown ROS 2
