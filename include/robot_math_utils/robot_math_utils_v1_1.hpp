@@ -6,6 +6,7 @@
 // Some functions are adapted from the Modern Robotics book codebase: https://github.com/Le0nX/ModernRoboticsCpp/tree/eacdf8800bc591b03727512c102d2c5dffe78cec
 
 #include <Eigen/Dense>
+#include <Eigen/Geometry> // For Quaternion
 #include <deque>
 #include <utility>
 #include <fstream>
@@ -332,10 +333,8 @@ public:
     // SO(3) and so(3) functions (quaterions as main representation)
     // Quaternion operations
     static Eigen::Vector4d QuatMul(const Eigen::Vector4d& q, const Eigen::Vector4d& p) {
-        Eigen::Vector4d qp;
-        qp(0) = q(0) * p(0) - q.tail<3>().dot(p.tail<3>()); 
-        qp.tail<3>() = q(0) * p.tail<3>() + p(0) * q.tail<3>() + q.tail<3>().cross(p.tail<3>());
-        return qp;
+        Eigen::Quaterniond qp = Eigen::Quaterniond(q(0), q(1), q(2), q(3)) * Eigen::Quaterniond(p(0), p(1), p(2), p(3));
+        return Eigen::Vector4d(qp.w(), qp.x(), qp.y(), qp.z());
     }
 
     static Eigen::Vector4d ConjQuat(const Eigen::Vector4d& quat) {
@@ -349,7 +348,7 @@ public:
         if (quat.size() != 4) {
             throw std::invalid_argument("The input quaternion must have exactly 4 elements.");
         }
-        return ConjQuat(quat) / ( QuatMul(quat, ConjQuat(quat))(0) );
+        return ConjQuat(quat);
     }
 
     static Eigen::Vector4d TransformQuats(const std::vector<Eigen::Vector4d>& quats) {
@@ -558,10 +557,9 @@ public:
 
     // Rotate vectors
     static Eigen::Vector3d RotateR3VecFromQuat(const Eigen::Vector3d& r3_vec, const Eigen::Vector4d& quat) {
-        Eigen::Vector4d vec_aug;
-        vec_aug << 0, r3_vec;
-        return QuatMul( QuatMul(quat, vec_aug), InvQuat(quat) ).tail(3); // q * [0, v] * q^-1
+        return Eigen::Quaterniond(quat(0), quat(1), quat(2), quat(3)) * r3_vec;
     }
+
 
 
     // SE(3) and se(3) functions

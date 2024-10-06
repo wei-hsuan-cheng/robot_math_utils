@@ -1,5 +1,5 @@
 #include <rclcpp/rclcpp.hpp>
-#include "robot_math_utils/robot_math_utils_v1_1.hpp"
+#include "robot_math_utils/robot_math_utils_v1_2.hpp"
 
 using Eigen::Matrix3d;
 using Eigen::Vector3d;
@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
     std::cout << "\n----- Test quat with z-axis pi rotation -----\n" << std::endl;
     Vector4d quat = RM::Quatz(M_PI);
     std::cout << "quat = [" << quat.transpose() << "]" << std::endl;
-    
+
     // // Test Euler angles (from quat to rot and convert back to zyx_euler)
     // std::cout << "\n----- Test Euler angles -----\n" << std::endl;
     // Vector3d zyx_euler(30, 15, 45);
