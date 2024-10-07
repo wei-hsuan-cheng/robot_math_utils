@@ -170,7 +170,7 @@ ros2 run robot_math_utils robot_math_utils_test
 
 - `InvPosQuat`: Compute the inverse of a position-quaternion pair.
 - `InvR6Pose`: Compute the inverse of a 6D pose.
-- 
+  
 #### Exp and Log in SE(3)
 
 - `R6Vec2se3Mat`: Convert a 6D vector to an se(3) matrix.
