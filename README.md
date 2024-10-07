@@ -163,11 +163,11 @@ ros2 run robot_math_utils robot_math_utils_test
 
 #### Pose Conversions
 
-- `PosQuat2R6Pose`, `R6Pose2PosQuat`: Convert between position-quaternion and 6D pose representations.
-- `PosQuat2Posso3`, `Posso32PosQuat`: Convert between position-quaternion and position-so(3) representations.
-- `PosQuat2SE3`, `SE32PosQuat`: Convert between position-quaternion and SE(3) matrix representations.
-- `RotPos2SE3`, `SE32RotPos`: Convert between rotation-position pairs and SE(3) matrices.
-- `R6Pose2SE3`, `SE32R6Pose`: Convert between 6D pose and SE(3) matrix representations.
+- `PosQuat2R6Pose`, `R6Pose2PosQuat`: Convert between position-quaternion pairs and 6D poses.
+- `PosQuat2Posso3`, `Posso32PosQuat`: Convert between position-quaternion pairs and position-so(3) pairs.
+- `PosQuat2TMat`, `TMat2PosQuat`: Convert between position-quaternion pairs and homogeneous transformation matrices.
+- `PosRot2TMat`, `TMat2PosRot`: Convert between position-rotation matrix pairs and homogeneous transformation matrices.
+- `R6Pose2TMat`, `TMat2R6Pose`: Convert between 6D poses and homogeneous transformation matrices
 
 #### Velocity Adjoint Maps
 
