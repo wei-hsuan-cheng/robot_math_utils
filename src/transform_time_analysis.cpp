@@ -33,10 +33,8 @@ std::tuple<Quaterniond, int64_t, double> TransformQuats(const std::vector<Quater
         int64_t duration_quat = std::chrono::duration_cast<std::chrono::nanoseconds>(end_quat - start_quat).count();
         total_duration_quat += duration_quat;
     }
-
     // Calculate average duration
     double avg_duration_quat = static_cast<double>(total_duration_quat) / num_iterations;
-
     return std::make_tuple(quat_init, total_duration_quat, avg_duration_quat);
 }
 
@@ -55,10 +53,8 @@ std::tuple<Matrix3d, int64_t, double> TransformRots(const std::vector<Matrix3d>&
         int64_t duration_rot = std::chrono::duration_cast<std::chrono::nanoseconds>(end_rot - start_rot).count();
         total_duration_rot += duration_rot;
     }
-
     // Calculate average duration
     double avg_duration_rot = static_cast<double>(total_duration_rot) / num_iterations;
-
     return std::make_tuple(result, total_duration_rot, avg_duration_rot);
 }
 
@@ -86,17 +82,14 @@ std::tuple<Matrix3d, int64_t, double> TransformRots(const std::vector<Matrix3d>&
 //         int64_t duration_pos_quat = std::chrono::duration_cast<std::chrono::nanoseconds>(end_pos_quat - start_pos_quat).count();
 //         total_duration_pos_quat += duration_pos_quat;
 //     }
-
 //     Vector7d result_pos_quat;
 //     result_pos_quat.head<3>() = p_accum;
 //     result_pos_quat(3) = q_accum.w();
 //     result_pos_quat(4) = q_accum.x();
 //     result_pos_quat(5) = q_accum.y();
 //     result_pos_quat(6) = q_accum.z();
-
 //     // Calculate average duration
 //     double avg_duration_pos_quat = static_cast<double>(total_duration_pos_quat) / num_iterations;
-
 //     return std::make_tuple(result_pos_quat, total_duration_pos_quat, avg_duration_pos_quat);
 // }
 
@@ -122,13 +115,10 @@ std::tuple<PosQuat, int64_t, double> TransformPosQuats(const std::vector<PosQuat
         int64_t duration_pos_quat = std::chrono::duration_cast<std::chrono::nanoseconds>(end_pos_quat - start_pos_quat).count();
         total_duration_pos_quat += duration_pos_quat;
     }
-
     // Calculate average duration
     double avg_duration_pos_quat = static_cast<double>(total_duration_pos_quat) / num_iterations;
-
     return std::make_tuple(pos_quat_accum, total_duration_pos_quat, avg_duration_pos_quat);
 }
-
 
 std::tuple<Matrix4d, int64_t, double> TransformSE3s(const std::vector<Matrix4d>& SE3s) {
     if (SE3s.empty()) {
@@ -145,10 +135,8 @@ std::tuple<Matrix4d, int64_t, double> TransformSE3s(const std::vector<Matrix4d>&
         int64_t duration_SE3 = std::chrono::duration_cast<std::chrono::nanoseconds>(end_SE3 - start_SE3).count();
         total_duration_SE3 += duration_SE3;
     }
-
     // Calculate average duration
     double avg_duration_SE3 = static_cast<double>(total_duration_SE3) / num_iterations;
-
     return std::make_tuple(result, total_duration_SE3, avg_duration_SE3);
 }
 
@@ -215,19 +203,19 @@ int main(int argc, char** argv) {
     auto [result_SE3, total_duration_SE3, avg_duration_SE3] = TransformSE3s(SE3s);
 
     // Print results
-    std::cout << "\n----- Results for SO(3) -----" << std::endl;
+    std::cout << "\n----- Quat v.s. Rotation matrix -----" << std::endl;
     std::cout << "Number of rotations: " << N << std::endl;
-    std::cout << "result_so3_from_quat = " << RM::Quat2so3(result_quat).transpose() << std::endl;
-    std::cout << "result_so3_from_rot = " << RM::Rot2so3(result_rot).transpose() << std::endl;
-    std::cout << "\n----- Time elapsed -----" << std::endl;
+    // std::cout << "result_so3_from_quat = " << RM::Quat2so3(result_quat).transpose() << std::endl;
+    // std::cout << "result_so3_from_rot = " << RM::Rot2so3(result_rot).transpose() << std::endl;
+    // std::cout << "\n----- Time elapsed -----" << std::endl;
     std::cout << "Quaternion transform time (avg) = " << avg_duration_quat << " [ns]" << std::endl;
     std::cout << "Rotation matrix transform time (avg) = " << avg_duration_rot << " [ns]" << std::endl;
 
-    std::cout << "\n----- Results for SE(3) -----" << std::endl;
+    std::cout << "\n----- PosQuat v.s. Transformation matrix -----" << std::endl;
     std::cout << "Number of transformations: " << N << std::endl;
-    std::cout << "result_pos_so3_from_pos_quat = " << RM::PosQuat2Posso3(result_pos_quat_old_data_type).transpose() << std::endl;
-    std::cout << "result_pos_so3_from_SE3 = " << RM::SE32Posso3(result_SE3).transpose() << std::endl;
-    std::cout << "\n----- Time elapsed -----" << std::endl;
+    // std::cout << "result_pos_so3_from_pos_quat = " << RM::PosQuat2Posso3(result_pos_quat_old_data_type).transpose() << std::endl;
+    // std::cout << "result_pos_so3_from_SE3 = " << RM::SE32Posso3(result_SE3).transpose() << std::endl;
+    // std::cout << "\n----- Time elapsed -----" << std::endl;
     std::cout << "PosQuat transform time (avg)  = " << avg_duration_pos_quat << " [ns]" << std::endl;
     std::cout << "SE3 matrix transform time (avg) = " << avg_duration_SE3 << " [ns]" << std::endl;
 
