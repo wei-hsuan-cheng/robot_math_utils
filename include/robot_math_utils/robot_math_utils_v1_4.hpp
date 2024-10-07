@@ -345,12 +345,11 @@ public:
         if (quats.empty()) {
             throw std::invalid_argument("The input list of quaternions is empty.");
         }
-        Quaterniond quat_init = quats[0];
+        Quaterniond quat_accum = quats[0];
         for (size_t i = 1; i < quats.size(); ++i) {
-            quat_init *= quats[i];
+            quat_accum *= quats[i];
         }
-        // quat_init.normalize(); // Normalize once at the end
-        return quat_init;
+        return quat_accum;
     }
 
     // Exp and Log maps in SO(3)
@@ -389,7 +388,6 @@ public:
         Quaterniond q;
         q.w() = std::cos(half_theta);
         q.vec() = std::sin(half_theta) * axis_ang.head<3>();
-        // q.normalize(); // Ensure unit quaternion
         return q;  // q = cos(theta/2) + sin(theta/2) * uhat
     }
 
