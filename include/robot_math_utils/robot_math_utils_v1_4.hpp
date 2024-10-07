@@ -63,7 +63,6 @@ public:
         std::cout << std::endl;
     }
 
-
     static void InitDatalog(std::ofstream& csv_writer_, const std::string& datalog_filename, const std::vector<std::string>& header_row) {
         csv_writer_.open(datalog_filename);
         if (csv_writer_.is_open()) {
@@ -91,7 +90,6 @@ public:
         }
         csv_writer_ << "\n"; // End of each row
     }
-
 
     template<typename MatrixType>
     static void SaveMat(const MatrixType& mat, const std::string& filename) {
