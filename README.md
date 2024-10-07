@@ -17,9 +17,9 @@ A C++ Eigen-based maths library for robotics applications, providing a collectio
     - [Sliding Window Functions](#sliding-window-functions)
     - [Basic Maths Functions](#basic-maths-functions)
       - [Random Variables](#random-variables)
-    - [Robot Transformation Functions](#robot-transformation-functions)
-      - [Homogeneous Coordinates](#homogeneous-coordinates)
-      - [Homogeneous Image Coordinates](#homogeneous-image-coordinates)
+    - [Homogeneous Coordinates](#homogeneous-coordinates)
+      - [Homogeneous Coordinates in Cartesian Space (3D)](#homogeneous-coordinates-in-cartesian-space-3d)
+      - [HomogeneousImage Coordinates (2D)](#homogeneousimage-coordinates-2d)
     - [SO(3) and so(3) Functions](#so3-and-so3-functions)
       - [Exp and Log in SO(3)](#exp-and-log-in-so3)
       - [SO(3) Rotation Conversions](#so3-rotation-conversions)
@@ -127,14 +127,14 @@ ros2 run robot_math_utils robot_math_utils_test
 - `RandNorDist`: Generate a random number from a normal distribution.
 - `RandNorDistVec`: Generate a random vector from a multivariate normal distribution.
 
-### Robot Transformation Functions
+### Homogeneous Coordinates
 
-#### Homogeneous Coordinates
+#### Homogeneous Coordinates in Cartesian Space (3D)
 
 - `R3Vec2Homo`: Convert a 3D vector to homogeneous coordinates.
 - `Homo2R3Vec`: Convert homogeneous coordinates to a 3D vector.
 
-#### Homogeneous Image Coordinates
+#### HomogeneousImage Coordinates (2D)
 
 - `ImgCoord2Homo`: Convert image coordinates to homogeneous form.
 - `Homo2ImgCoord`: Convert homogeneous image coordinates back to image coordinates.
