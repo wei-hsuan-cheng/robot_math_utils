@@ -21,12 +21,16 @@
 using Eigen::Quaterniond;
 using Eigen::Matrix3d;
 using Eigen::Matrix4d;
+using Eigen::MatrixXd;
+
 using Matrix6d = Eigen::Matrix<double, 6, 6>;
 using Eigen::Vector2d;
 using Eigen::Vector3d;
 using Eigen::Vector4d;
 using Vector6d = Eigen::Matrix<double, 6, 1>;
 using Vector7d = Eigen::Matrix<double, 7, 1>;
+using Eigen::VectorXd;
+
 
 struct PosQuat {
     Vector3d pos;
@@ -851,6 +855,15 @@ public:
                 return current_pos_quat;
             }
         }
+    }
+
+    // PosQuat moving averaging. First convert into so(3), mavg, and convert back to PosQuat
+    static PosQuat PosQuatMAvg(const PosQuat& current_pos_quat, std::deque<Vector6d>& buffer, std::size_t window_size) {
+        // Convert pos_quat to pos_so3
+        Vector6d current_pos_so3 = PosQuat2Posso3(current_pos_quat);
+        // Compute MAvg
+        Vector6d mavg_pos_so3 = MAvg(current_pos_so3, buffer, window_size);
+        return Posso32PosQuat(mavg_pos_so3); // mavg_pos_quat
     }
 
     /* Motion mapping */
