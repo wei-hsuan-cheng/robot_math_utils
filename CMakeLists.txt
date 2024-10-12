@@ -28,10 +28,12 @@ include_directories(
 # Source files
 set(ROBOT_MATH_UTILS_TEST_SOURCES src/robot_math_utils_test.cpp)
 set(TRANSFORM_TIME_ANAYLSIS_SOURCES src/transform_time_analysis.cpp)
+set(TEST_FK_SOURCES src/test_fk.cpp)
 
 # Add executable
 add_executable(robot_math_utils_test ${ROBOT_MATH_UTILS_TEST_SOURCES})
 add_executable(transform_time_analysis ${TRANSFORM_TIME_ANAYLSIS_SOURCES})
+add_executable(test_fk ${TEST_FK_SOURCES})
 
 # Link libraries
 ament_target_dependencies(robot_math_utils_test
@@ -44,10 +46,17 @@ ament_target_dependencies(transform_time_analysis
   Eigen3
 )
 
+ament_target_dependencies(test_fk
+  rclcpp
+  Eigen3
+)
+
 # Install targets
 install(TARGETS
   robot_math_utils_test
   transform_time_analysis
+  test_fk
+  
   DESTINATION lib/${PROJECT_NAME}
 )
 
