@@ -49,7 +49,7 @@ struct PosRot {
 };
 
 struct DHParams {
-    // Denavit-Hartenberg (D-H) parameters for each joint
+    // Modified Denavit-Hartenberg (D-H) parameters for each joint
     // alpha{i-1}, a{i-1}, d{i}, theta{i}
     double alpha;
     double a;
