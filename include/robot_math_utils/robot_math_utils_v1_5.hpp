@@ -64,7 +64,7 @@ struct DHParams {
 };
 
 struct DHTable {
-    std::vector<DHParams> joints;  // Store DH parameters for each joint
+    std::vector<DHParams> joints;  // Store D-H parameters for each joint
     Eigen::MatrixXd dh_table;      // Store D-H table as a matrix
 
     // Constructor to initialise DHTable from a vector of DHParams (joints)
