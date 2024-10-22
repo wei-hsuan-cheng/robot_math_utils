@@ -2,7 +2,7 @@
 #define RM_UTILS_HPP
 
 // Author: Wei-Hsuan Cheng, johnathancheng0125@gmail.com, https://github.com/wei-hsuan-cheng
-// ver_1.5, last edit: 241012
+// ver_1.6, last edit: 241022
 // Some functions are adapted from the Modern Robotics book codebase: https://github.com/Le0nX/ModernRoboticsCpp/tree/eacdf8800bc591b03727512c102d2c5dffe78cec
 
 #include <Eigen/Dense>
