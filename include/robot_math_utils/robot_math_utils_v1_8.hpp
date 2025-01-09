@@ -246,7 +246,9 @@ public:
 
     static double ArcCos(double cos_val, bool rad = true) {
         if (cos_val > 1.0 || cos_val < -1.0) {
-            throw std::invalid_argument("The input cosine value must be within [-1, 1].");
+            if (cos_val > 1.0) cos_val = 1.0;
+            if (cos_val < -1.0) cos_val = -1.0;
+            // throw std::invalid_argument("The input cosine value must be within [-1, 1].");
         }
         double theta = rad ? std::acos(cos_val) : std::acos(cos_val) * r2d;
         return theta; // std::acos() guarantees theta lies in [0, pi] [rad] or [0, 180] [deg]
@@ -443,9 +445,10 @@ public:
     }
 
     static Vector3d Quat2so3(const Quaterniond& quat) {
-        quat.normalize();
-        double theta = 2 * ArcCos( ( quat.w() > 0 ? quat.w() : -quat.w() ) , true);
-        return (2 / Sinc(theta / 2)) * ( quat.w() > 0 ? Vector3d(quat.vec()) : Vector3d(-quat.vec()) );
+        // Normalize the quaternion to ensure it's a unit quaternion
+        Quaterniond q = quat.normalized();
+        double theta = 2 * ArcCos( ( q.w() > 0 ? q.w() : -q.w() ) , true);
+        return (2 / Sinc(theta / 2)) * ( q.w() > 0 ? Vector3d(q.vec()) : Vector3d(-q.vec()) );
     }
 
     static Quaterniond so32Quat(const Vector3d& so3) {
