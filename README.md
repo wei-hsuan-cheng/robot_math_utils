@@ -74,7 +74,7 @@ Make sure you have the following installed:
 Clone this repo into your ROS 2 workspace, install dependencies, and build pkg:
 
 ```bash
-cd ~/ros2_ws/src && git clone https://github.com/your_username/robot_math_utils.git
+cd ~/ros2_ws/src && git clone https://github.com/wei-hsuan-cheng/robot_math_utils.git
 
 cd ~/ros2_ws && rosdep update && rosdep install --from-paths src --ignore-src -r -y
 
