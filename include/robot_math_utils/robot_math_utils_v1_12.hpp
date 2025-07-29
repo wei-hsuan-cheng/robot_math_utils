@@ -89,10 +89,74 @@ struct DHTable {
             dh_table(i, 3) = joints[i].theta;
         }
     }
-    // Function to print the D-H table
+
+    /**
+     * @brief Print the D-H table in formatted columns with dividers
+     */
     void PrintTable() const {
-        std::cout << "D-H table:\n" << dh_table << std::endl;
+
+        // Add joint index (the i'th joint) to the D-H table
+        int n = dh_table.rows(); // number of joints
+        Eigen::MatrixXd dh_table_with_joint_index(n, 5);
+        // first column = 0,1,...,n-1
+        for(int i = 0; i < n; ++i){
+            dh_table_with_joint_index(i, 0) = i+1; // 1-based index for each joint
+            dh_table_with_joint_index.row(i).segment<4>(1) = dh_table.row(i);
+        } // now dh_table_with_joint_index has columns [i | alpha a d theta]
+
+        int rows = dh_table_with_joint_index.rows();
+        int cols = dh_table_with_joint_index.cols();  // should be 5: i, alpha_{i-1}, a_{i-1}, d_{i}, theta_{i}
+
+        // Print title box
+        const int width = 12;
+        const std::string& title = "D-H table (modified D-H parameters)";
+        const std::string& subtitle = "D-H transform: T_{i-1}_{i} = Rot_x(alpha_{i-1}) * Trans_x(a_{i-1}) * Trans_z(d_{i}) * Rot_z(theta_{i})";
+        int inner = std::max(title.size(), subtitle.size());
+        int boxW = inner + 12;
+
+        std::cout << "\n";
+        std::cout << std::string(boxW, '*') << "\n";
+        std::cout << "***** " << title << std::string(inner - title.size(), ' ') << " *****\n";
+        std::cout << "***** " << subtitle << std::string(inner - subtitle.size(), ' ') << " *****\n";
+        std::cout << std::string(boxW, '*') << "\n";
+
+        // Header separator
+        std::cout << "|";
+        for (int c = 0; c < cols; ++c) std::cout << std::string(width, '-') << "|";
+        std::cout << "\n";
+
+        // Header
+        std::vector<std::string> hdr = {"i", "alpha_{i-1}", "a_{i-1}", "d_{i}", "theta_{i}"};
+        std::cout << "|";
+        for (const auto& h : hdr) {
+            std::cout << std::setw(width) << h << "|";
+        }
+        std::cout << "\n";
+
+        // Separator
+        std::cout << "|";
+        for (int c = 0; c < cols; ++c) std::cout << std::string(width, '-') << "|";
+        std::cout << "\n";
+
+        // Data rows
+        for (int r = 0; r < rows; ++r) {
+            std::cout << "|";
+            for (int c = 0; c < cols; ++c) {
+                int digits = (c == 0) ? 0 : 4; // first column (joint index) has no decimal places
+                std::cout << std::setw(width) << std::fixed << std::setprecision(digits)
+                          << dh_table_with_joint_index(r, c) << "|";
+            }
+            std::cout << "\n";
+        }
+
+        // Bottom separator
+        std::cout << "|";
+        for (int c = 0; c < cols; ++c) std::cout << std::string(width, '-') << "|";
+        std::cout << "\n";
+
+        std::cout << std::fixed; // reset format
     }
+
     // Function to print a specific joint's D-H parameters
     void PrintJoint(int joint_index) const {
         if (joint_index < 1 || joint_index > joints.size()) {
@@ -145,22 +209,24 @@ struct ScrewList {
 
     /**
      * @brief Print the screw axes with formatted columns and dividers
-     * @param title Optional title header
      */
-    void PrintScrewList() const {
+    void PrintList() const {
         const int cols = screw_list.cols();
-        const int width = 12;
-        
-        // // Title
-        const std::string& title = "Screw list (end-effector frame screw axes)";
-        const std::string& subtitle = "S_e,i = [v, w]^T ∈ R^6 ≅ se(3), i = 1, ..., n";
-        std::cout << "\n*********************************************************";
-        std::cout << "\n***** " << title << "    *****\n";
-        std::cout << "\n***** " << subtitle << " *****\n";
-        std::cout << "\n*********************************************************";
-        std::cout << "\n";
 
-        // Separator line
+        // Print title box
+        const int width = 12;
+        const std::string& title = "Screw list (end-effector frame screw axes)";
+        const std::string& subtitle = "S_e,i = [v, w]^T (se(3) or R^6 vector), i = 1, ..., n";
+        int inner = std::max(title.size(), subtitle.size());
+        int boxW = inner + 12;
+
+        std::cout << "\n";
+        std::cout << std::string(boxW, '*') << "\n";
+        std::cout << "***** " << title << std::string(inner - title.size(), ' ') << " *****\n";
+        std::cout << "***** " << subtitle << std::string(inner - subtitle.size(), ' ') << " *****\n";
+        std::cout << std::string(boxW, '*') << "\n";
+
+        // Header separator
         std::cout << "|";
         for (int i = 0; i < cols; ++i) std::cout << std::string(width, '-') << "|";
         std::cout << "\n";
@@ -174,7 +240,7 @@ struct ScrewList {
         }
         std::cout << "\n";
 
-        // Separator line
+        // Separator
         std::cout << "|";
         for (int i = 0; i < cols; ++i) std::cout << std::string(width, '-') << "|";
         std::cout << "\n";
@@ -190,7 +256,7 @@ struct ScrewList {
             std::cout << "\n";
         }
 
-        // Separator line
+        // Bottom separator
         std::cout << "|";
         for (int i = 0; i < cols; ++i) std::cout << std::string(width, '-') << "|";
         std::cout << "\n";

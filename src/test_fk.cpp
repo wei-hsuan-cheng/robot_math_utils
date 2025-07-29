@@ -31,31 +31,30 @@ int main(int argc, char** argv) {
         DHParams(Eigen::Vector4d(-M_PI/2,         0,            113.15e-3,    M_PI     ))
     };
     // DH table
-    DHTable dh_table(joints);
+    DHTable dh_table_(joints);
     size_t n = joints.size();
     
     // // Get the D-H parameters for each joint
     // std::cout << "\n----- Get D-H parameters for each joint -----" << std::endl;
     // for (int i = 1; i <= 6; ++i) {
-    //     DHParams dh_ji = dh_table.GetJoint(i);
+    //     DHParams dh_ji = dh_table_.GetJoint(i);
     //     std::cout << "dh_j" << i << ": " << dh_ji.alpha << ", " << dh_ji.a << ", " << dh_ji.d << ", " << dh_ji.theta << std::endl;
     // }
 
     // // Print the D-H parameters for each joint
     // std::cout << "\n----- Print D-H parameters for each joint -----" << std::endl;
     // for (int i = 1; i <= 6; ++i) {
-    //     dh_table.PrintJoint(i);
+    //     dh_table_.PrintJoint(i);
     // }
 
 
     // Print the entire D-H table
-    std::cout << "\n----- D-H table -----" << std::endl;
-    std::cout << dh_table << std::endl;
+    dh_table_.PrintTable();
 
 
     // Generate ScrewList from DHTable
-    ScrewList screw_list_ = RM::ScrewListFromDH(dh_table);
-    screw_list_.PrintScrewList();
+    ScrewList screw_list_ = RM::ScrewListFromDH(dh_table_);
+    screw_list_.PrintList();
 
     // Test FK using the two methods
     VectorXd theta_list(n);
@@ -67,7 +66,7 @@ int main(int argc, char** argv) {
     std::cout << "\n-- FK test with given theta list [rad] -->\n" << theta_list.transpose() << "\n";
 
     // Test FKDH
-    Eigen::Matrix4d T_b_e_dh = RM::PosQuat2TMat( RM::FKDH(dh_table, theta_list) );
+    Eigen::Matrix4d T_b_e_dh = RM::PosQuat2TMat( RM::FKDH(dh_table_, theta_list) );
     std::cout << "\n-- FKDH result T_b_e -->\n" << T_b_e_dh << "\n";
 
     // Test FKPoE
