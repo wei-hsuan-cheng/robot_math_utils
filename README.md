@@ -182,7 +182,7 @@ ros2 run robot_math_utils robot_math_utils_test
 #### $SE(3)$ Pose Conversions
 
 - `PosQuat2R6Pose`, `R6Pose2PosQuat`: Convert between position-quaternion pairs and 6D poses.
-- `PosQuat2Posso3`, `Posso32PosQuat`: Convert between position-quaternion pairs and position-$so(3)$ pairs.
+- `PosQuat2Posso3`, `Posso32PosQuat`: Convert between position-quaternion pairs and position- $so(3)$ pairs.
 - `PosQuat2TMat`, `TMat2PosQuat`: Convert between position-quaternion pairs and homogeneous transformation matrices.
 - `PosRot2TMat`, `TMat2PosRot`: Convert between position-rotation matrix pairs and homogeneous transformation matrices.
 - `R6Pose2TMat`, `TMat2R6Pose`: Convert between 6D poses and homogeneous transformation matrices
