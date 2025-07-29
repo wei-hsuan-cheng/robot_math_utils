@@ -199,8 +199,8 @@ ros2 run robot_math_utils robot_math_utils_test
 #### Velocity Transformation (Velocity Adjoint Maps)
 
 - `Adjoint`: The adjoint map matrix.
-- `AdjointE2B`: The adjoint map that transfer end-effector representation into base representation.
-- `AdjointB2E`: The adjoint map that transfer base representation into end-effector representation.
+- `AdjointE2B`: The adjoint map that transfer twist (spatial velocity) from end-effector representation into base representation.
+- `AdjointB2E`: The adjoint map that transfer twist from base representation into end-effector representation.
 
 #### Pose Preprocessing
 
