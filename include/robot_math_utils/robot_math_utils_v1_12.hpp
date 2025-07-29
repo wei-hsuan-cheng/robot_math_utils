@@ -1,9 +1,15 @@
-#ifndef RM_UTILS_HPP
-#define RM_UTILS_HPP
+#ifndef ROBOT_MATH_UTILS_HPP
+#define ROBOT_MATH_UTILS_HPP
 
 // Author: Wei-Hsuan Cheng, johnathancheng0125@gmail.com, https://github.com/wei-hsuan-cheng
 // GitHub repo: https://github.com/wei-hsuan-cheng/robot_math_utils
-// ver_1.12, last edit: 250728
+// ver_1.12, last edit: 250729
+//
+// Version history:
+//  2025-07-20 v1.12
+//    - Added ScrewList, ScrewListFromDH, FKDH, FKPoE for forward kinematics (FK) 
+//      using D-H parameters and product of exponentials (PoE) method.
+
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry> // For Quaternion
@@ -1342,4 +1348,4 @@ public:
 
 };
 
-#endif // RM_UTILS_HPP
+#endif // ROBOT_MATH_UTILS_HPP

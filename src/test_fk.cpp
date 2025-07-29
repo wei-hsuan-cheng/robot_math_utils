@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
 
     // FK error (set DH as ground truth)
     Vector6d pos_so3_error = RM::TMat2Posso3(T_b_e_poe.inverse() * T_b_e_dh);
-    std::cout << "FK pos_so3 error [m, rad] -->\n" << pos_so3_error.transpose() << "\n\n";
+    std::cout << "\n-- FK pos_so3 error [m, rad] -->\n" << pos_so3_error.transpose() << "\n\n";
 
     
     // Shutdown ROS 2
