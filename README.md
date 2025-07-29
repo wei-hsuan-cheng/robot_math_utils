@@ -20,14 +20,14 @@ A C++ Eigen-based maths library for robotics applications, providing a collectio
     - [Homogeneous Coordinates](#homogeneous-coordinates)
       - [Homogeneous Coordinates in Cartesian Space (3D)](#homogeneous-coordinates-in-cartesian-space-3d)
       - [HomogeneousImage Coordinates (2D)](#homogeneousimage-coordinates-2d)
-    - [SO(3) and so(3) Functions](#so3-and-so3-functions)
-      - [Exp and Log in SO(3)](#exp-and-log-in-so3)
-      - [SO(3) Rotation Conversions](#so3-rotation-conversions)
-      - [SO(3) Rotation Transformations](#so3-rotation-transformations)
-    - [SE(3) and se(3) Functions](#se3-and-se3-functions)
-      - [Exp and Log in SE(3)](#exp-and-log-in-se3)
-      - [SE(3) Pose Conversions](#se3-pose-conversions)
-      - [SE(3) Pose Transformations](#se3-pose-transformations)
+    - [$SO(3)$ and $so(3)$ Functions](#so3-and-so3-functions)
+      - [Exp and Log in $SO(3)$](#exp-and-log-in-so3)
+      - [$SO(3)$ Rotation Conversions](#so3-rotation-conversions)
+      - [$SO(3)$ Rotation Transformations](#so3-rotation-transformations)
+    - [$SE(3)$ and $se(3)$ Functions](#se3-and-se3-functions)
+      - [Exp and Log in $SE(3)$](#exp-and-log-in-se3)
+      - [$SE(3)$ Pose Conversions](#se3-pose-conversions)
+      - [$SE(3)$ Pose Transformations](#se3-pose-transformations)
     - [Robot Kinematics, Motion Planning and Control](#robot-kinematics-motion-planning-and-control)
       - [Velocity Kinematics (Velocity Adjoint Maps)](#velocity-kinematics-velocity-adjoint-maps)
       - [Pose Preprocessing](#pose-preprocessing)
@@ -42,8 +42,8 @@ A C++ Eigen-based maths library for robotics applications, providing a collectio
 - **Data Logging**: Functions to initialise and log data to CSV files.
 - **Numerical Computations**: Utilities for near-zero checks, moving averages, and statistical calculations.
 - **Maths Utilities**: Basic mathematical functions, including error percentage, normalisation, and random number generation.
-- **Robot Transformations**: Functions for homogeneous coordinates, SO(3) rotations, quaternions, and SE(3) pose transformations.
-- **Exp and Log Maps**: Implementations of exponential and logarithmic mappings for SO(3) rotations and SE(3) transformations.
+- **Robot Transformations**: Functions for homogeneous coordinates, $SO(3)$ rotations, quaternions, and $SE(3)$ pose transformations.
+- **Exp and Log Maps**: Implementations of exponential and logarithmic mappings for $SO(3)$ rotations and $SE(3)$ transformations.
 - **Motion Mapping**: Map from one workspace/velocity into another. Commonly used in telerobotics.
 - **Motion Planning**: Screw motions and S-curve generation, etc.
 - **Controller Functions**: Utilities for error thresholds and kinematic controller.
@@ -100,7 +100,7 @@ ros2 run robot_math_utils robot_math_utils_test
 ### Numerical Conditions
 
 - `NearZero`: Check if a value is near zero within a threshold.
-- `ConstrainedAngle`: Normalise angle to a specified interval (-pi, pi].
+- `ConstrainedAngle`: Normalise angle to a specified interval $(-\pi, \pi]$.
   
 ### Sliding Window Functions
 
@@ -139,55 +139,55 @@ ros2 run robot_math_utils robot_math_utils_test
 - `ImgCoord2Homo`: Convert image coordinates to homogeneous form.
 - `Homo2ImgCoord`: Convert homogeneous image coordinates back to image coordinates.
 
-### SO(3) and so(3) Functions
+### $SO(3)$ and $so(3)$ Functions
 
 - `Quatx`, `Quaty`, `Quatz`: Generate quaternions for rotations about x, y, z axes.
 - `Rotx`, `Roty`, `Rotz`: Generate rotation matrices about the x, y, z axes.
 - `Rotxyz`, `Rotzyx`: Generate rotation matrices from Euler angles.
 - `InvQuat`: Compute the inverse of a quaternion.
   
-#### Exp and Log in SO(3)
+#### Exp and Log in $SO(3)$
 
-- `R3Vec2so3Mat`: Convert a 3D vector to an so(3) matrix.
-- `so3Mat2R3Vec`: Convert an so(3) matrix back to a 3D vector.
-- `AxisAng3`: Convert a so(3) vector to axis-angle representation.
-- `so32Quat`: Convert a so(3) vector to a quaternion.
-- `Quat2so3`: Convert a quaternion to a so(3) vector.
-- `MatrixExp3`: Compute the exp map for screws in so(3).
-- `MatrixLog3`: Compute the log map for rotation matrices in SO(3).
+- `R3Vec2so3Mat`: Convert a 3D vector to an $so(3)$ matrix.
+- `so3Mat2R3Vec`: Convert an $so(3)$ matrix back to a 3D vector.
+- `AxisAng3`: Convert a $so(3)$ vector to axis-angle representation.
+- `so32Quat`: Convert a $so(3)$ vector to a quaternion.
+- `Quat2so3`: Convert a quaternion to a $so(3)$ vector.
+- `MatrixExp3`: Compute the exp map for screws in $so(3)$.
+- `MatrixLog3`: Compute the log map for rotation matrices in $SO(3)$.
 
-#### SO(3) Rotation Conversions
+#### $SO(3)$ Rotation Conversions
 
 - `Quat2zyxEuler`, `zyxEuler2Quat`: Conversion between quaternions and ZYX Euler angles.
 - `Rot2zyxEuler`: Convert a rotation matrix to ZYX Euler angles.
 
-#### SO(3) Rotation Transformations
+#### $SO(3)$ Rotation Transformations
 
 - `TransformQuats`: Apply a sequence of quaternion transformations.
 - `TransformRots`: Apply a sequence of rotation matrix transformations.
 
-### SE(3) and se(3) Functions
+### $SE(3)$ and $se(3)$ Functions
 
 - `InvPosQuat`: Compute the inverse of a position-quaternion pair.
 - `InvR6Pose`: Compute the inverse of a 6D pose.
   
-#### Exp and Log in SE(3)
+#### Exp and Log in $SE(3)$
 
-- `R6Vec2se3Mat`: Convert a 6D vector to an se(3) matrix.
-- `se3Mat2R6Vec`: Convert an se(3) matrix back to a 6D vector.
-- `AxisAng6`: Convert an se(3) vector to axis-angle representation.
-- `MatrixExp6`: Compute the exp map for screws in se(3).
-- `MatrixLog6`: Compute the log map for homogeneous transformation matrices in SE(3).
+- `R6Vec2se3Mat`: Convert a 6D vector to an $se(3)$ matrix.
+- `se3Mat2R6Vec`: Convert an $se(3)$ matrix back to a 6D vector.
+- `AxisAng6`: Convert an $se(3)$ vector to axis-angle representation.
+- `MatrixExp6`: Compute the exp map for screws in $se(3)$.
+- `MatrixLog6`: Compute the log map for homogeneous transformation matrices in $SE(3)$.
 
-#### SE(3) Pose Conversions
+#### $SE(3)$ Pose Conversions
 
 - `PosQuat2R6Pose`, `R6Pose2PosQuat`: Convert between position-quaternion pairs and 6D poses.
-- `PosQuat2Posso3`, `Posso32PosQuat`: Convert between position-quaternion pairs and position-so(3) pairs.
+- `PosQuat2Posso3`, `Posso32PosQuat`: Convert between position-quaternion pairs and position-$so(3)$ pairs.
 - `PosQuat2TMat`, `TMat2PosQuat`: Convert between position-quaternion pairs and homogeneous transformation matrices.
 - `PosRot2TMat`, `TMat2PosRot`: Convert between position-rotation matrix pairs and homogeneous transformation matrices.
 - `R6Pose2TMat`, `TMat2R6Pose`: Convert between 6D poses and homogeneous transformation matrices
 
-#### SE(3) Pose Transformations
+#### $SE(3)$ Pose Transformations
 
 - `TransformPosQuats`: Apply a sequence of position-quaternion pair transformations.
 - `TransformTMats`: Apply a sequence of transformations using homogeneous transformation matrices.
