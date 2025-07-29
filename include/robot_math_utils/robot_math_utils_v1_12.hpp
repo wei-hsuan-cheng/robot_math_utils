@@ -1092,10 +1092,10 @@ public:
     static ScrewList ScrewListFromDH(const DHTable& table) {
         // number of joints
         size_t n = table.joints.size();
-        // zero offsets
-        VectorXd zero_offsets = VectorXd::Zero(n);
+        // zero theta offsets
+        VectorXd zero_theta_offsets = VectorXd::Zero(n);
         // compute zero configuration pose via FKDH
-        PosQuat zero_config_pose = FKDH(table, zero_offsets);
+        PosQuat zero_config_pose = FKDH(table, zero_theta_offsets);
         Matrix4d T_b_e_zero = PosQuat2TMat(zero_config_pose);
 
         // compute pose of joint's local frame w.r.t. base
@@ -1117,14 +1117,13 @@ public:
         for (size_t i = 0; i < n; ++i) {
             // pose of joint frame w.r.t. end-effector
             Eigen::Matrix4d T_e_ji = T_b_e_zero.inverse() * T_b_ji_list[i];
-            PosRot pr = TMat2PosRot(T_e_ji);
-            Eigen::Vector3d w = pr.rot.col(2);
-            Eigen::Vector3d p = pr.pos;
-            Eigen::Vector3d v = -w.cross(p);
+            Eigen::Vector3d u_hat = TMat2PosRot(T_e_ji).rot.col(2); // axis of rotation: z-axis of joint frame w.r.t. ee
+            Eigen::Vector3d r = -TMat2PosRot(T_e_ji).pos; // rotation radius vector: (negative) position of joint frame w.r.t. ee
+            Eigen::Vector3d v = u_hat.cross(r); // linear velocity: v = u_hat x r
 
             Vector6d S;
             S.head<3>() = v;
-            S.tail<3>() = w;
+            S.tail<3>() = u_hat;
             screw_list.col(i) = S;
         }
 
