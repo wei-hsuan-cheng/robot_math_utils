@@ -9,6 +9,7 @@
 //  2025-07-20 v1.12
 //    - Added ScrewList, ScrewListFromDH, FKDH, FKPoE for forward kinematics (FK) 
 //      using D-H parameters and product of exponentials (PoE) method.
+//    - Fix AdjointB2E and AdjointE2B syntax.
 
 
 #include <Eigen/Dense>
@@ -1157,7 +1158,6 @@ public:
     }
 
 
-
     // Velocity adjoint maps
     static Matrix6d Adjoint(const Matrix3d& R, const Vector3d& p) {
         Matrix6d adj = Matrix6d::Identity();
@@ -1168,14 +1168,16 @@ public:
         return adj;
     }
 
-    static Vector6d AdjointE2B(const Matrix3d& R_b_e, const Vector3d& p_offset, const Vector6d& twist_e_e) {
+    static Vector6d AdjointE2B(const Matrix3d& R_b_e, const Vector3d& p_offset, const Vector6d& twist_e) {
+        /* Transfer twist from end-effector representation into base representation */
         Matrix6d adj_e2b = Adjoint(R_b_e, p_offset);
-        return adj_e2b * twist_e_e;
+        return adj_e2b * twist_e;
     }
 
-    static Vector6d AdjointB2E(const Matrix3d& R_b_e, const Vector3d& p_offset, const Vector6d& twist_b_e) {
+    static Vector6d AdjointB2E(const Matrix3d& R_b_e, const Vector3d& p_offset, const Vector6d& twist_b) {
+        /* Transfer twist from base representation into end-effector representation */
         Matrix6d adj_b2e = Adjoint(R_b_e, p_offset).inverse();
-        return adj_b2e * twist_b_e;
+        return adj_b2e * twist_b;
     }
 
     /* Pose preprocessing */

@@ -51,7 +51,7 @@ A C++ Eigen-based maths library for robotics applications, providing a collectio
   
 ### Under development
 
-- **Kinematics**: D-H parameters, forward and inverse kinematics, etc.
+- **Kinematics**: velocity/differential kinemtaics (Jacobian) and numerical inverse kinematics.
 
 ## Installation
 
@@ -196,7 +196,7 @@ ros2 run robot_math_utils robot_math_utils_test
 
 ### Robot Kinematics, Motion Planning and Control
 
-#### Velocity Kinematics (Velocity Adjoint Maps)
+#### Velocity Transformation (Velocity Adjoint Maps)
 
 - `Adjoint`: The adjoint map matrix.
 - `AdjointE2B`: The adjoint map that transfer end-effector representation into base representation.
