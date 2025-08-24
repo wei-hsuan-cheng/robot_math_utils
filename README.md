@@ -86,6 +86,9 @@ Run the ROS 2 node for test:
 ```bash
 cd ~/ros2_ws && . install/setup.bash
 ros2 run robot_math_utils robot_math_utils_test
+ros2 run robot_math_utils transform_time_analysis
+ros2 run robot_math_utils test_fk
+ros2 run robot_math_utils test_ik
 ```
 
 ## Functions Overview
