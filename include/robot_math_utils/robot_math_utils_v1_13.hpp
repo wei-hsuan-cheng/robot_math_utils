@@ -3,10 +3,9 @@
 
 // Author: Wei-Hsuan Cheng, johnathancheng0125@gmail.com, https://github.com/wei-hsuan-cheng
 // GitHub repo: https://github.com/wei-hsuan-cheng/robot_math_utils
-// ver_1.13, last edit: 250824
+// v1_13, last edit: 250824
 //
 // Version history:
-//  2025-09-24 v1.13
 //    - Added end-effector Jacobian for differential kinematics (DK) and numerical inverse kinematics (IK)
 
 
