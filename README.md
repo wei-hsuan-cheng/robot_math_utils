@@ -51,7 +51,7 @@ A C++ Eigen-based maths library for robotics applications, providing a collectio
   
 ### Under development
 
-- **Kinematics**: velocity/differential kinemtaics (Jacobian) and numerical inverse kinematics.
+- **Self-Collision/Singularity Check**: Check if there's near self-collision and singularity of the robot.
 
 ## Installation
 
