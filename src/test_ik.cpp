@@ -36,8 +36,9 @@ int main(int argc, char** argv) {
 
     // === Ground-truth joint angles (to generate a reachable pos_quat_target) ===
     VectorXd theta_gt(n);
-    // theta_gt << 8.94727e-07, -0.0916584, 2.01211, -1.13506, 1.5708, -1.5708; // same as test_fk demo
-    theta_gt << 0.001, 0.001, 0.001, 0.001, 0.001, 0.001; // near singularity
+    theta_gt << 8.94727e-07, -0.0916584, 2.01211, -1.13506, 1.5708, -1.5708; // same as test_fk demo
+    // theta_gt << 0.01, 0.01, 0.01, 0.01, 0.01, 0.01; // near singularity
+    // theta_gt << 0.001, 0.001, 0.001, 0.001, 0.001, 0.001; // near singularity
     // theta_gt << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0; // exact singularity
 
     std::cout << "\n-- Ground-truth theta [rad] -->\n" << theta_gt.transpose() << "\n";
