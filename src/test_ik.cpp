@@ -56,8 +56,13 @@ int main(int argc, char** argv) {
     
 
     // === IK initial guess ===
-    VectorXd theta_init_error(n);
-    theta_init_error << M_PI/20, -M_PI/25, 0.0, M_PI/30, -M_PI/10, 0.0; // error in theta initial guess
+    // VectorXd theta_init_error(n);
+    // theta_init_error << M_PI/20, -M_PI/25, 0.0, M_PI/30, -M_PI/10, 0.0; // error in theta initial guess
+
+    VectorXd mean = VectorXd::Zero(n);
+    MatrixXd cov = M_PI/20.0 * VectorXd::Ones(n).asDiagonal();
+    VectorXd theta_init_error = RM::RandNorDistVec(mean, cov);
+
     VectorXd theta_init = theta_gt + theta_init_error; // initial guess for IK
     std::cout << "\n-- Initial guess theta_init [rad] -->\n" << theta_init.transpose() << "\n";
 
