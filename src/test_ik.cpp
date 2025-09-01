@@ -1,5 +1,5 @@
 #include <rclcpp/rclcpp.hpp>
-#include "robot_math_utils/robot_math_utils_v1_13.hpp"
+#include "robot_math_utils/robot_math_utils_v1_14.hpp"
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -36,7 +36,10 @@ int main(int argc, char** argv) {
 
     // === Ground-truth joint angles (to generate a reachable pos_quat_target) ===
     VectorXd theta_gt(n);
-    theta_gt << 8.94727e-07, -0.0916584, 2.01211, -1.13506, 1.5708, -1.5708; // same as test_fk demo
+    // theta_gt << 8.94727e-07, -0.0916584, 2.01211, -1.13506, 1.5708, -1.5708; // same as test_fk demo
+    theta_gt << 0.001, 0.001, 0.001, 0.001, 0.001, 0.001; // near singularity
+    // theta_gt << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0; // exact singularity
+
     std::cout << "\n-- Ground-truth theta [rad] -->\n" << theta_gt.transpose() << "\n";
 
     // Target pose from FK (PoE)
@@ -106,6 +109,27 @@ int main(int argc, char** argv) {
     // Joint error
     VectorXd theta_err = theta_sol - theta_gt;
     std::cout << "\n-- Joint error (theta_sol - theta_gt) [rad] -->\n" << theta_err.transpose() << "\n";
+
+
+    // === Manipulability / Singularity check (no normalization) ===
+    {
+        MatrixXd J_e = RM::Jacob(screws, theta_gt);
+        const double w         = RM::ManipulabilityIndex(J_e);
+        const double log10w    = RM::ManipulabilityIndexLog10(J_e);
+        const double sigma_min = RM::MinSingularValue(J_e);
+        const double sigma_min_threshold = pow(10, -5);
+        const bool   near_sing = RM::NearSingular(J_e, sigma_min_threshold); // tweak threshold as needed
+
+        std::cout << "\n----- Manipulability / Singularity check (no normalization) -----\n";
+        std::cout << "   w          = " << w << "   (log10(w) = " << log10w << ")\n";
+        std::cout << "   sigma_min  = " << sigma_min << "\n";
+        std::cout << "   nearSing? (thresh = " + std::to_string(sigma_min_threshold) + ")  = " << (near_sing ? "YES" : "NO") << "\n";
+        if (near_sing) {
+            std::cout << "   [WARN] Jacobian near singular; DLS (lambda=" << lambda
+                    << ") may be critical here.\n";
+        }
+    }
+
 
     // Shutdown ROS 2
     rclcpp::shutdown();

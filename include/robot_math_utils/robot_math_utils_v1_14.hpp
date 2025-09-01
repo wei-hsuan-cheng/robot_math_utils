@@ -1287,6 +1287,58 @@ public:
     }
 
 
+    // Collision/singularity check
+    // Yoshikawa manipulability index = product of singular values of J. 
+    // Paper: T. Yoshikawa, “Manipulability of robotic mechanisms,” The International Journal of Robotics Research, vol. 4, pp. 3–9, 1985.
+    // If any of the singular values is 0, return 0 (singular).
+    static double ManipulabilityIndex(const MatrixXd& J) {
+        if (J.size() == 0) return 0.0;
+        Eigen::JacobiSVD<MatrixXd> svd(J, Eigen::ComputeThinU | Eigen::ComputeThinV);
+        const VectorXd& s = svd.singularValues();
+
+        // Product of singular values; if concerned about numerical stability, consider using the log version below.
+        double w = 1.0;
+        for (int i = 0; i < s.size(); ++i)
+        {
+            const double si = s[i];
+            w *= si;
+            if (w == 0.0) break;
+        }
+        // return NearZero(w) ? 0.0 : w;
+        return w;
+    }
+
+    // Log for a numerical more stable version: return log10(w); when 10^(log10(w)) is needed, return 10^(log10(w)).
+    // Pros: Avoid overflow/underflow when the degrees of freedom or scales differ greatly.
+    static double ManipulabilityIndexLog10(const MatrixXd& J) {
+        if (J.size() == 0) return -std::numeric_limits<double>::infinity();
+        Eigen::JacobiSVD<MatrixXd> svd(J, Eigen::ComputeThinU | Eigen::ComputeThinV);
+        const VectorXd& s = svd.singularValues();
+
+        double sum_log10 = 0.0;
+        for (int i = 0; i < s.size(); ++i)
+        {
+            if (s[i] <= 0.0) return -std::numeric_limits<double>::infinity(); // Singular
+            sum_log10 += std::log10(s[i]);
+        }
+        return sum_log10; // = log10(product s_i)
+    }
+
+    // Helper: return the minimum singular value (σ_min) for singularity check; can also be used to define condition number, etc.
+    static double MinSingularValue(const MatrixXd& J) {
+        if (J.size() == 0) return 0.0;
+        Eigen::JacobiSVD<MatrixXd> svd(J, Eigen::ComputeThinU | Eigen::ComputeThinV);
+        const VectorXd& s = svd.singularValues();
+        return (s.size() ? s.minCoeff() : 0.0);
+    }
+
+    // Helper: check if the Jacobian is near singular
+    static bool NearSingular(const MatrixXd& J, double sigma_min_threshold = pow(10, -5)) {
+        // return NearZero(MinSingularValue(J), sigma_min_threshold);
+        return NearZero(ManipulabilityIndex(J), sigma_min_threshold);
+    }
+
+
     /* Pose preprocessing */
     static PosQuat PosQuatOutlierRemoval(const PosQuat& current_pos_quat, double std_thresh, std::deque<Vector6d>& buffer, std::size_t window_size) {
         // Convert pos_quat to pos_so3
