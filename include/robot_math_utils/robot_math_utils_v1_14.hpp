@@ -6,7 +6,10 @@
 // v1_14, last edit: 250901
 //
 // Version history:
-//    - Added singularity check by manipulability index
+//  - Added singularity check by manipulability index
+//  - Modify IKNum to use pos_so3 to drive the velocity toward desired configuration
+//  - Add pos_quat <-> pos_rot
+//  - Fix MatrixLog3() and MatrixLog6() potential numerical issue by using clamped ArcCos() function
 
 
 #include <Eigen/Dense>
