@@ -1,5 +1,5 @@
 #include <rclcpp/rclcpp.hpp>
-#include "robot_math_utils/robot_math_utils_v1_13.hpp"
+#include "robot_math_utils/robot_math_utils_v1_14.hpp"
 
 using Eigen::Matrix3d;
 using Eigen::Vector3d;
@@ -79,6 +79,23 @@ int main(int argc, char** argv) {
     std::cout << "quat_inv = [" << quat_inv.w() << ", " << quat_inv.x() << ", " << quat_inv.y() << ", " << quat_inv.z() << "]" << std::endl;
     std::cout << "quat_quat_conj = [" << quat_quat_conj.w() << ", " << quat_quat_conj.x() << ", " << quat_quat_conj.y() << ", " << quat_quat_conj.z() << "]" << std::endl;
     std::cout << "quat_quat_inv = [" << quat_quat_inv.w() << ", " << quat_quat_inv.x() << ", " << quat_quat_inv.y() << ", " << quat_quat_inv.z() << "]" << std::endl;
+
+    // Test velocity adjoint maps
+    PosQuat pq(Vector3d(0.1, 0.2, 0.3), RM::Quatz(M_PI / 2.0));
+    PosRot pr = RM::PosQuat2PosRot(pq);
+    Matrix4d TMat = RM::PosQuat2TMat(pq);
+
+    Matrix6d Ad1 = RM::Adjoint(pr.rot, pr.pos);
+    Matrix6d Ad2 = RM::Adjoint(TMat);
+    Matrix6d Ad3 = RM::Adjoint(pr);
+    Matrix6d Ad4 = RM::Adjoint(pq);
+
+    // Print the adjoint matrices
+    std::cout << "\n----- Adjoint Matrices -----\n" << std::endl;
+    std::cout << "Ad1 =\n" << Ad1 << std::endl;
+    std::cout << "Ad2 =\n" << Ad2 << std::endl;
+    std::cout << "Ad3 =\n" << Ad3 << std::endl;
+    std::cout << "Ad4 =\n" << Ad4 << std::endl;
 
     // Continue adjusting the rest of the code in a similar manner...
 

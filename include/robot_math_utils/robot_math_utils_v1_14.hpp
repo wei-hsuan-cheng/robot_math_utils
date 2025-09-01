@@ -872,6 +872,21 @@ public:
         return pos_quat_1_2;
     }
 
+    // pos_quat <-> pos_rot
+    static PosRot PosQuat2PosRot(const PosQuat& pos_quat_1_2) {
+        PosRot pos_rot_1_2;
+        pos_rot_1_2.pos = pos_quat_1_2.pos;
+        pos_rot_1_2.rot = Quat2Rot(pos_quat_1_2.quat);
+        return pos_rot_1_2;
+    }
+
+    static PosQuat PosRot2PosQuat(const PosRot& pos_rot_1_2) {
+        PosQuat pos_quat_1_2;
+        pos_quat_1_2.pos = pos_rot_1_2.pos;
+        pos_quat_1_2.quat = Rot2Quat(pos_rot_1_2.rot);
+        return pos_quat_1_2;
+    }
+
     // pos_quat <-> pos_so3
     static Vector6d PosQuat2Posso3(const PosQuat& pos_quat_1_2) {
         Vector6d pos_so3_1_2;
@@ -903,7 +918,7 @@ public:
     }
 
     // Other conversions
-    // rot_pos <-> transformation matrix
+    // pos_rot <-> transformation matrix
     static Matrix4d PosRot2TMat(const PosRot& pos_rot_1_2) {
         Matrix4d T_1_2 = Matrix4d::Identity();
         T_1_2.topLeftCorner<3, 3>() = pos_rot_1_2.rot;
@@ -927,7 +942,7 @@ public:
         return PosQuat2R6Pose(TMat2PosQuat(T_1_2));
     }
 
-    // r6_pose <-> rot_pos
+    // r6_pose <-> pos_rot
     static PosRot R6Pose2PosRot(const Vector6d& pose_1_2) {
         PosQuat pos_quat_1_2 = R6Pose2PosQuat(pose_1_2);
         PosRot pos_rot_1_2;
@@ -1156,13 +1171,40 @@ public:
 
 
     // Velocity adjoint maps
-    static Matrix6d Adjoint(const Matrix3d& R, const Vector3d& p) {
+    // static Matrix6d Adjoint(const Matrix3d& R, const Vector3d& p) {
+    //     Matrix6d adj = Matrix6d::Identity();
+    //     Matrix3d p_skew = R3Vec2so3Mat(p);
+    //     adj.topLeftCorner<3, 3>() = R;
+    //     adj.topRightCorner<3, 3>() = p_skew * R;
+    //     adj.bottomRightCorner<3, 3>() = R;
+    //     return adj;
+    // }
+
+    static inline Matrix6d Adjoint_Rp(const Matrix3d& R, const Vector3d& p) {
         Matrix6d adj = Matrix6d::Identity();
         Matrix3d p_skew = R3Vec2so3Mat(p);
-        adj.topLeftCorner<3, 3>() = R;
-        adj.topRightCorner<3, 3>() = p_skew * R;
-        adj.bottomRightCorner<3, 3>() = R;
+        adj.topLeftCorner<3,3>()     = R;
+        adj.topRightCorner<3,3>()    = p_skew * R;
+        adj.bottomRightCorner<3,3>() = R;
         return adj;
+    }
+
+    static inline Matrix6d Adjoint(const Matrix3d& R, const Vector3d& p) {
+        return Adjoint_Rp(R, p);
+    }
+
+    static inline Matrix6d Adjoint(const Matrix4d& T) {
+        Matrix3d R = T.block<3,3>(0,0);
+        Vector3d p = T.block<3,1>(0,3);
+        return Adjoint_Rp(R, p);
+    }
+
+    static inline Matrix6d Adjoint(const PosRot& pos_rot) {
+        return Adjoint_Rp(pos_rot.rot, pos_rot.pos);
+    }
+
+    static inline Matrix6d Adjoint(const PosQuat& pos_quat) {
+        return Adjoint_Rp(Quat2Rot(pos_quat.quat), pos_quat.pos);
     }
 
     static Vector6d AdjointE2B(const Matrix3d& R_b_e, const Vector3d& p_offset, const Vector6d& twist_e) {
