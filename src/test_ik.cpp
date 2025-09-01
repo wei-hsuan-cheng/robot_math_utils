@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
     const double eomg = 1e-7;      // orientation tol (‖ω‖) [rad]
     const double ev   = 1e-7;      // position tol (‖v‖) [m]
     int cur_iter = 0; // current iteration (for debugging)
-    const int    max_iter = 100;
+    const int    max_iter = 200;
     const double lambda   = 1e-2;  // DLS damping (set 0.0 to disable)
     const double step_clip = 0.0;  // set >0.0 (e.g., 0.2) to cap per-step |Δθ|
     const bool   wrap_pi   = true;
@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
 
     std::cout << "\n-- IK success -->\n" << (ok ? "[SUCCEEDED]" : "[FAILED]") << "\n";
     std::cout << "-- theta_sol [rad] -->\n" << theta_sol.transpose() << "\n";
-    std::cout << "-- IK computation iteration/time [idx, ms] -->\n" << cur_iter << ", " << elapsed_ms.count() << std::endl;
+    std::cout << "-- IK computation iteration/time/rate [idx, ms, Hz] -->\n" << cur_iter << ", " << elapsed_ms.count() << ", " << (1000.0 / elapsed_ms.count()) << std::endl;
 
     // === Verify: FK on solution and errors ===
     PosQuat pos_quat_fk = RM::FKPoE(screws, theta_sol);
@@ -98,14 +98,23 @@ int main(int argc, char** argv) {
     std::cout << "\n-- FK resultant r6_pose [m, rad] (from IK solution, FKPoE(theta_sol)) -->\n"
               << RM::PosQuat2R6Pose(pos_quat_fk).transpose() << "\n";
 
-    // Body/end-effector twist error: V_e = se3Vec( log( T_sol^{-1} * T_target ) ) = [v; w]
-    Matrix4d T_sol = RM::PosQuat2TMat(pos_quat_fk);
-    Matrix4d T_err = RM::Inv(T_sol) * T_target;
-    Vector6d V_e = RM::se3Mat2R6Vec( RM::MatrixLog6(T_err) );
+    // // Body/end-effector twist error: V_e = se3Vec( log( T_sol^{-1} * T_target ) ) = [v; w]
+    // Matrix4d T_sol = RM::PosQuat2TMat(pos_quat_fk);
+    // Matrix4d T_err = RM::Inv(T_sol) * T_target;
+    // Vector6d V_e = RM::se3Mat2R6Vec( RM::MatrixLog6(T_err) );
+    // Vector3d v_lin = V_e.head<3>();
+    // Vector3d w_ang = V_e.tail<3>();
+    // std::cout << "\n-- Residual body twist V_e = [v; w]^T -->\n" << V_e.transpose() << "\n";
+    // std::cout << "   ‖v‖ = " << v_lin.norm() << " [m],  ‖w‖ = " << w_ang.norm() << " [rad]\n";
+
+    // Body/end-effector twist error: V_e = ToPosso3( T_sol^{-1} * T_target ) = [v; w]
+    PosQuat pos_quat_fk_d = RM::PosQuats2RelativePosQuat(pos_quat_fk, pos_quat_target);
+    Vector6d V_e = RM::PosQuat2Posso3(pos_quat_fk_d); // [v; w]
     Vector3d v_lin = V_e.head<3>();
     Vector3d w_ang = V_e.tail<3>();
     std::cout << "\n-- Residual body twist V_e = [v; w]^T -->\n" << V_e.transpose() << "\n";
     std::cout << "   ‖v‖ = " << v_lin.norm() << " [m],  ‖w‖ = " << w_ang.norm() << " [rad]\n";
+
 
     // // Joint error (wrapped to (-pi, pi])
     // VectorXd theta_err = theta_sol - theta_gt;

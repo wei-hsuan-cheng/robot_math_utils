@@ -399,10 +399,7 @@ public:
     }
 
     static double ArcCos(double cos_val, bool rad = true) {
-        if (cos_val > 1.0 || cos_val < -1.0) {
-            if (cos_val > 1.0) cos_val = 1.0;
-            if (cos_val < -1.0) cos_val = -1.0;
-        }
+        cos_val = std::clamp(cos_val, -1.0, 1.0);
         double theta = rad ? std::acos(cos_val) : std::acos(cos_val) * r2d;
         return theta; // std::acos() guarantees theta lies in [0, pi] [rad] or [0, 180] [deg]
     }
@@ -626,7 +623,7 @@ public:
     }
 
     static Matrix3d MatrixLog3(const Matrix3d& R) {
-        double theta = std::acos((R.trace() - 1) / 2.0);
+        double theta = ArcCos((R.trace() - 1) / 2.0);
         if (NearZero(theta)) {
             return Matrix3d::Zero();
         } else {
@@ -845,7 +842,7 @@ public:
         if (NearZero(omega_hat.norm())) {
             m_ret.block<3, 1>(0, 3) = p;
         } else {
-            double theta = std::acos((R.trace() - 1) / 2.0);
+            double theta = ArcCos((R.trace() - 1) / 2.0);
             // Removed unused variable 'omega_hat_normalized'
             Matrix3d G_inv = Matrix3d::Identity() - 0.5 * omega_hat +
                 (1 / (theta * theta) - (1 + std::cos(theta)) / (2 * theta * std::sin(theta))) * omega_hat * omega_hat;
@@ -1257,7 +1254,7 @@ public:
         int& cur_iter,            // [in/out] current iteration (for debugging)
         const double eomg = 1e-7,            // orientation tolerance (‖ω‖) [m]
         const double ev   = 1e-7,            // position tolerance (‖v‖) [rad]
-        const int    max_iter = 20, // maximum iterations
+        const int    max_iter = 200, // maximum iterations
         const double lambda = 0.0,           // DLS damping (0 → plain LS)
         const double step_clip = 0.0,        // 0 to disable; otherwise limit max |Δθ| per step
         const bool   clamp_angles_pi = true  // wrap each θ to (-π, π]
@@ -1274,11 +1271,19 @@ public:
         // };
 
         // helper: compute end-effector/body twist error V_e = [v; w]
+
+        // // V_e driven by se3 error
+        // auto compute_error = [&](const PosQuat& pos_quat_cur)->Vector6d {
+        //     Matrix4d Tfk = PosQuat2TMat(pos_quat_cur);
+        //     Matrix4d Td  = PosQuat2TMat(target);
+        //     Matrix4d Tdiff = Inv(Tfk) * Td;
+        //     return se3Mat2R6Vec( MatrixLog6(Tdiff) ); // [v; w]
+        // };
+        
+        // V_e driven by pos_so3 error
         auto compute_error = [&](const PosQuat& pos_quat_cur)->Vector6d {
-            Matrix4d Tfk = PosQuat2TMat(pos_quat_cur);
-            Matrix4d Td  = PosQuat2TMat(target);
-            Matrix4d Tdiff = Inv(Tfk) * Td;
-            return se3Mat2R6Vec( MatrixLog6(Tdiff) ); // [v; w]
+            PosQuat pos_quat_cur_d = PosQuats2RelativePosQuat(pos_quat_cur, target);
+            return PosQuat2Posso3(pos_quat_cur_d); // [v; w]
         };
 
         // initial FK and error
