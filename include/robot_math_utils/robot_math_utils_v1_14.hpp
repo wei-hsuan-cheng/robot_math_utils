@@ -3,13 +3,14 @@
 
 // Author: Wei-Hsuan Cheng, johnathancheng0125@gmail.com, https://github.com/wei-hsuan-cheng
 // GitHub repo: https://github.com/wei-hsuan-cheng/robot_math_utils
-// v1_14, last edit: 250901
+// v1_14, last edit: 250903
 //
 // Version history:
 //  - Added singularity check by manipulability index
 //  - Modify IKNum to use pos_so3 to drive the velocity toward desired configuration
 //  - Add pos_quat <-> pos_rot
 //  - Fix MatrixLog3() and MatrixLog6() potential numerical issue by using clamped ArcCos() function
+//  - Added printing home pose in PrintList() for ScrewList structure
 
 
 #include <Eigen/Dense>
@@ -261,6 +262,16 @@ struct ScrewList {
         std::cout << "|";
         for (int i = 0; i < cols; ++i) std::cout << std::string(width, '-') << "|";
         std::cout << "\n";
+
+        // Print home pose
+        std::cout << "\n-- Home pose M [m, quat] -->\n"
+                  << M.pos.x() << ", "
+                  << M.pos.y() << ", "
+                  << M.pos.z() << ", "
+                  << M.quat.w() << ", "
+                  << M.quat.x() << ", "
+                  << M.quat.y() << ", "
+                  << M.quat.z() << "\n";
 
         std::cout << std::fixed; // reset format
     }
