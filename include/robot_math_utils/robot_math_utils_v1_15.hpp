@@ -801,7 +801,6 @@ public:
     }
 
     static Matrix3d Quat2Rot(const Quaterniond& quat) {
-        // return quat.normalized().toRotationMatrix();
         return quat.toRotationMatrix();
     }
 
@@ -899,8 +898,6 @@ public:
         Quaterniond qz(Eigen::AngleAxisd(z_angle, Vector3d::UnitZ()));
 
         Quaterniond q = qx * qy * qz;
-        // q.normalize(); // Ensure the quaternion is normalized
-
         return q;
     }
 
@@ -984,7 +981,6 @@ public:
             m_ret.block<3, 1>(0, 3) = p;
         } else {
             double theta = ArcCos((R.trace() - 1) / 2.0);
-            // Removed unused variable 'omega_hat_normalized'
             Matrix3d G_inv = Matrix3d::Identity() - 0.5 * omega_hat +
                 (1 / (theta * theta) - (1 + std::cos(theta)) / (2 * theta * std::sin(theta))) * omega_hat * omega_hat;
             Vector3d v = G_inv * p;
@@ -1314,9 +1310,6 @@ public:
         );
 
         return out;
-
-        // return ScrewList(screw_list, zero_config_pose);
-
     }
 
 
@@ -1347,15 +1340,6 @@ public:
 
 
     // Velocity adjoint maps
-    // static Matrix6d Adjoint(const Matrix3d& R, const Vector3d& p) {
-    //     Matrix6d adj = Matrix6d::Identity();
-    //     Matrix3d p_skew = R3Vec2so3Mat(p);
-    //     adj.topLeftCorner<3, 3>() = R;
-    //     adj.topRightCorner<3, 3>() = p_skew * R;
-    //     adj.bottomRightCorner<3, 3>() = R;
-    //     return adj;
-    // }
-
     static inline Matrix6d Adjoint_Rp(const Matrix3d& R, const Vector3d& p) {
         Matrix6d adj = Matrix6d::Identity();
         Matrix3d p_skew = R3Vec2so3Mat(p);
@@ -1443,12 +1427,6 @@ public:
             throw std::invalid_argument("[RMUtils::IKNum() Error] theta_list length must match number of screws (joints).");
         }
 
-        // // Optional angle wrapping function
-        // auto wrap_pi = [&](VectorXd& q){
-        //     if (!clamp_angles_pi) return;
-        //     for (int i = 0; i < q.size(); ++i) q(i) = ConstrainedAngle(q(i), true);
-        // };
-
         // helper: compute end-effector/body twist error V_e = [v; w]
 
         // // V_e driven by se3 error
@@ -1496,9 +1474,6 @@ public:
             // Update θ
             theta_list += dtheta;
 
-            // // Optional angle wrapping
-            // wrap_pi(theta_list);
-
             // Iterate
             pos_quat_fk = FKPoE(screws, theta_list);
             V_e = compute_error(pos_quat_fk);
@@ -1521,7 +1496,7 @@ public:
         if (J.size() == 0) return 0.0;
         Eigen::JacobiSVD<MatrixXd> svd(J, Eigen::ComputeThinU | Eigen::ComputeThinV);
         const VectorXd& s = svd.singularValues();
-
+        
         // Product of singular values; if concerned about numerical stability, consider using the log version below.
         double w = 1.0;
         for (int i = 0; i < s.size(); ++i)
@@ -1530,7 +1505,6 @@ public:
             w *= si;
             if (w == 0.0) break;
         }
-        // return NearZero(w) ? 0.0 : w;
         return w;
     }
 
@@ -1789,7 +1763,7 @@ public:
         return std::make_pair(twist_cmd, target_reached);
     }
 
-    // Cartesian kinematic control
+    // Cartesian kinematic (motion) control
     static Vector6d KpPosso3(const Vector6d& pos_so3_m_cmd, const Matrix6d& kp_pos_so3, bool target_reached) {     
         Vector6d twist_cmd = kp_pos_so3 * pos_so3_m_cmd;
         if (target_reached) {
