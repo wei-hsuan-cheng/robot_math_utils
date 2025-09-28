@@ -119,17 +119,21 @@ In our PoE setting, $(\partial M_i/\partial\theta_j) M_i^{-1} = -\hat{J}_j$ for 
 
 ## Assembling the manipulability gradient
 
-Let $S_k := \partial J_b/\partial\theta_k \in \mathbb{R}^{6\times n}$. From the body identities above,
+Let the manipulator Hessian be the third‑order tensor $\mathcal{H} \in \mathbb{R}^{6\times n\times n}$ with components
 $$
-S_k = \big[\,-\,\mathrm{ad}_{J_k}J_1\;\cdots\;-\,\mathrm{ad}_{J_k}J_{k-1}\;\;0\;\cdots\;0\big].
+\mathcal{H}_{a i k} := \frac{\partial (J_b)_{a i}}{\partial \theta_k},\quad a\in\{1,\dots,6\},\; i,k\in\{1,\dots,n\}.
+$$
+Denote the $k$‑th slice along the third index by $H^{(k)} := \partial J_b/\partial\theta_k \in \mathbb{R}^{6\times n}$. From the body identities above,
+$$
+H^{(k)} = \big[\,-\,\mathrm{ad}_{J_k}J_1\;\cdots\;-\,\mathrm{ad}_{J_k}J_{k-1}\;\;0\;\cdots\;0\big].
 $$
 The gradient component is
 $$
-\boxed{\;\frac{\partial w}{\partial \theta_k} = w\,\mathrm{Tr}(S_k \, J_b^{\dagger})\;}
+\boxed{\;\frac{\partial w}{\partial \theta_k} = w\,\mathrm{Tr}(H^{(k)} \, J_b^{\dagger})\;}
 $$
 and using the triangular structure,
 $$
-\mathrm{Tr}(S_k J_b^{\dagger}) = -\sum_{i=1}^{k-1} (J_b^{\dagger})_{i,:}\,\big(\mathrm{ad}_{J_k}J_i\big).
+\mathrm{Tr}(H^{(k)} J_b^{\dagger}) = -\sum_{i=1}^{k-1} (J_b^{\dagger})_{i,:}\,\big(\mathrm{ad}_{J_k}J_i\big).
 $$
 Here $(J_b^{\dagger})_{i,:}\in\mathbb{R}^{1\times 6}$ is row $i$ of $J_b^{\dagger}$. The dot denotes the standard Euclidean inner product in $\mathbb{R}^6$.
 
@@ -144,7 +148,7 @@ which, after factoring out the $j$‑th exponential, reduces to $-\,[\hat{J}_j,\
 ## Practical notes
 
 - Near singularities, $(J_b J_b^T)^{-1}$ may be ill‑conditioned; use a damped inverse $(J_b J_b^T + \lambda^2 I)^{-1}$ or SVD pseudoinverse in practice.
-- Dimensions: $J_b\in\mathbb{R}^{6\times n}$, $J_b^{\dagger}\in\mathbb{R}^{n\times 6}$, $S_k\in\mathbb{R}^{6\times n}$; $\mathrm{Tr}(S_k J_b^{\dagger})$ is scalar.
+- Dimensions: $J_b\in\mathbb{R}^{6\times n}$, $J_b^{\dagger}\in\mathbb{R}^{n\times 6}$, $\mathcal{H}\in\mathbb{R}^{6\times n\times n}$ with slice $H^{(k)}\in\mathbb{R}^{6\times n}$; $\mathrm{Tr}(H^{(k)} J_b^{\dagger})$ is scalar.
 - The body identities imply $\partial J_i/\partial\theta_i = 0$. For the space Jacobian, self‑derivatives are also zero but the triangular structure flips.
 
 ## References
