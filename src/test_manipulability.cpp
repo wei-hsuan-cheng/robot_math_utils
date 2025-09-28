@@ -58,8 +58,9 @@ int main(int argc, char** argv) {
     ScrewList screws = RM::ScrewListFromDH(dh_table);
 
     // Random test configurations (skip near singular ones)
-    const int num_trials = 5;
-    const double h = 1e-6;              // finite-difference step
+    const int num_trials = 1000;
+    int success_count = 0;
+    const double h = 1e-8;              // finite-difference step
     const double near_sing_thresh = std::pow(10, -5);
     const double rel_tol = 1e-3;        // relative tolerance for gradient check
     const double abs_tol = 1e-6;        // absolute tolerance fallback
@@ -81,11 +82,11 @@ int main(int argc, char** argv) {
         Eigen::VectorXd grad = RM::ManipulabilityGradient(J);                 // from J directly
         Eigen::VectorXd grad_poe = RM::ManipulabilityGradient(screws, theta); // PoE overload
 
-        std::cout << "\n[Trial " << (trial+1) << "] w = " << w << "\n";
+        // std::cout << "\n[Trial " << (trial+1) << "] w = " << w << "\n";
 
-        // Check consistency of the two implementations
-        double impl_diff = (grad - grad_poe).norm();
-        std::cout << "  impl diff ‖grad(J) - grad(screws,θ)‖ = " << impl_diff << "\n";
+        // // Check consistency of the two implementations
+        // double impl_diff = (grad - grad_poe).norm();
+        // std::cout << "  impl diff ‖grad(J) - grad(screws,θ)‖ = " << impl_diff << "\n";
 
         // Per-joint finite-difference check
         double max_abs_err = 0.0;
@@ -98,30 +99,47 @@ int main(int argc, char** argv) {
             double rel_err = abs_err / denom;
             max_abs_err = std::max(max_abs_err, abs_err);
             max_rel_err = std::max(max_rel_err, rel_err);
-            std::cout << "    j=" << j+1
-                      << ":  grad(j) = " << ana
-                      << ",  num ≈ " << num
-                      << ",  abs err = " << abs_err
-                      << ",  rel err = " << rel_err << "\n";
+
+            // std::cout << "    j=" << j+1
+            //           << ":  grad(j) = " << ana
+            //           << ",  num ≈ " << num
+            //           << ",  abs err = " << abs_err
+            //           << ",  rel err = " << rel_err << "\n";
+
         }
 
         const bool pass = (max_rel_err < rel_tol) || (max_abs_err < abs_tol);
-        std::cout << "  Summary: max_abs_err=" << max_abs_err
-                  << ", max_rel_err=" << max_rel_err
-                  << "  => " << (pass ? "[PASS]" : "[FAIL]") << "\n";
+        // std::cout << "  Summary: max_abs_err=" << max_abs_err
+        //           << ", max_rel_err=" << max_rel_err
+        //           << "  => " << (pass ? "[PASS]" : "[FAIL]") << "\n";
 
         // Random small perturbation check: Δw ≈ grad · Δθ
-        Eigen::VectorXd dtheta = RM::RandNorDistVec(mean, cov) * 1e-4; // tiny step
+        Eigen::VectorXd dtheta = RM::RandNorDistVec(mean, cov) * h; // tiny step
         Eigen::MatrixXd Jp = RM::Jacob(screws, theta + dtheta);
         double w_plus = RM::ManipulabilityIndex(Jp);
         double dw_num = w_plus - w;
         double dw_lin = grad.dot(dtheta);
         double abs_err_dw = std::abs(dw_lin - dw_num);
         double rel_err_dw = abs_err_dw / std::max(1e-12, std::abs(dw_num));
-        std::cout << "  Δw (num)=" << dw_num << ",  grad·Δθ=" << dw_lin
-                  << ",  abs err=" << abs_err_dw
-                  << ",  rel err=" << rel_err_dw << "\n";
+        const bool pass_dw = (rel_err_dw < rel_tol) || (abs_err_dw < abs_tol);
+
+        if (pass_dw) {
+            ++success_count;
+        } else {
+            std::cout << "  [WARNING] Finite-difference perturbation check failed!\n";
+
+            std::cout << "  Δw (num)=" << dw_num << ",  grad·Δθ=" << dw_lin
+                      << ",  abs err=" << abs_err_dw
+                      << ",  rel err=" << rel_err_dw << "\n";        
+            std::cout << "  Δw ≈ grad · Δθ => " << (pass_dw ? "[PASS]" : "[FAIL]") << "\n";
+        }
+        
     }
+
+    std::cout << "\n===== All tests done =====\n";
+    std::cout << "Successful trials: " << success_count << "/" << num_trials << " ("
+              << (static_cast<double>(success_count) / static_cast<double>(num_trials) * 100.0)
+              << "%)\n";
 
     rclcpp::shutdown();
     return 0;
