@@ -6,7 +6,7 @@
 // v1_16, last edit: 250928
 //
 // Version history:
-//  - Added manipulability index Jacobian function.
+//  - Added ManipulabilityGradient() function.
 
 
 #include <Eigen/Dense>
