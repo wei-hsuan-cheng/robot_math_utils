@@ -30,12 +30,14 @@ set(ROBOT_MATH_UTILS_TEST_SOURCES src/robot_math_utils_test.cpp)
 set(TRANSFORM_TIME_ANAYLSIS_SOURCES src/transform_time_analysis.cpp)
 set(TEST_FK_SOURCES src/test_fk.cpp)
 set(TEST_IK_SOURCES src/test_ik.cpp)
+set(TEST_MANIPULABILITY_SOURCES src/test_manipulability.cpp)
 
 # Add executable
 add_executable(robot_math_utils_test ${ROBOT_MATH_UTILS_TEST_SOURCES})
 add_executable(transform_time_analysis ${TRANSFORM_TIME_ANAYLSIS_SOURCES})
 add_executable(test_fk ${TEST_FK_SOURCES})
 add_executable(test_ik ${TEST_IK_SOURCES})
+add_executable(test_manipulability ${TEST_MANIPULABILITY_SOURCES})
 
 # Link libraries
 ament_target_dependencies(robot_math_utils_test
@@ -58,12 +60,18 @@ ament_target_dependencies(test_ik
   Eigen3
 )
 
+ament_target_dependencies(test_manipulability
+  rclcpp
+  Eigen3
+)
+
 # Install targets
 install(TARGETS
   robot_math_utils_test
   transform_time_analysis
   test_fk
   test_ik
+  test_manipulability
   
   DESTINATION lib/${PROJECT_NAME}
 )

@@ -1538,6 +1538,85 @@ public:
         return NearZero(ManipulabilityIndex(J), sigma_min_threshold);
     }
 
+    // Manipulability gradient (Yoshikawa) for a 6×n body/end-effector Jacobian J_b.
+    // Returns ∂w/∂θ ∈ R^n using: (∂w/∂θ_j) = w · Tr( H^{(j)} · J_b^{†} ),
+    // where H^{(j)} = ∂J_b/∂θ_j has columns: for i < j, H^{(j)}[:, i] = − ad_{J_j} J_i; else 0.
+    // Notes
+    //  - This uses the PoE body-Jacobian derivative identities and requires only J_b itself.
+    //  - J_b^{†} is computed via SVD by default; set lambda>0 for damped least-squares J^{†} = Jᵀ (J Jᵀ + λ² I)^{-1}.
+    //  - If J is empty or w == 0, returns zero vector of length n.
+    static VectorXd ManipulabilityGradient(const MatrixXd& J, double lambda = 0.0) {
+        const int m = static_cast<int>(J.rows());
+        const int n = static_cast<int>(J.cols());
+        if (m == 0 || n == 0) return VectorXd();
+        if (m != 6) {
+            throw std::invalid_argument("[RMUtils::ManipulabilityGradient() Error] Jacobian must be 6×n in body/end-effector frame.");
+        }
+
+        // Yoshikawa manipulability w = sqrt(det(J J^T)) = product of singular values
+        const double w = ManipulabilityIndex(J);
+        VectorXd grad = VectorXd::Zero(n);
+        if (w == 0.0) return grad; // singular → zero gradient by definition here
+
+        // Compute pseudoinverse J† (n×6)
+        MatrixXd Jdagger;
+        if (lambda > 0.0) {
+            // Damped least squares pseudoinverse: J† = Jᵀ (J Jᵀ + λ² I)^{-1}
+            MatrixXd A = J * J.transpose() + (lambda * lambda) * MatrixXd::Identity(m, m);
+            Jdagger = J.transpose() * A.inverse();
+        } else {
+            // SVD-based Moore–Penrose pseudoinverse
+            Eigen::JacobiSVD<MatrixXd> svd(J, Eigen::ComputeThinU | Eigen::ComputeThinV);
+            const MatrixXd& U = svd.matrixU();    // 6×r
+            const MatrixXd& V = svd.matrixV();    // n×r
+            const VectorXd& S = svd.singularValues(); // r
+            const int r = static_cast<int>(S.size());
+            MatrixXd SigmaPlus = MatrixXd::Zero(r, r);
+            // Tolerance for reciprocal of singular values
+            const double eps = std::numeric_limits<double>::epsilon();
+            const double maxS = (r > 0 ? S(0) : 0.0);
+            const double tol = std::max(m, n) * eps * maxS;
+            for (int i = 0; i < r; ++i) {
+                if (S(i) > tol) SigmaPlus(i, i) = 1.0 / S(i);
+            }
+            Jdagger = V * SigmaPlus * U.transpose(); // n×6
+        }
+
+        // Helper: ad matrix for a twist S=[v; omega] with our ordering [v; omega]
+        auto ad_matrix = [&](const Vector6d& Svec) -> Matrix6d {
+            const Vector3d v = Svec.head<3>();
+            const Vector3d omega = Svec.tail<3>();
+            Matrix6d ad; ad.setZero();
+            ad.topLeftCorner<3,3>()  = R3Vec2so3Mat(omega);
+            ad.topRightCorner<3,3>() = R3Vec2so3Mat(v);
+            ad.bottomRightCorner<3,3>() = R3Vec2so3Mat(omega);
+            // bottom-left is zero
+            return ad;
+        };
+
+        // Compute gradient components using triangular structure of H^{(j)}
+        for (int j = 0; j < n; ++j) {
+            if (j == 0) { grad(j) = 0.0; continue; }
+            const Matrix6d ad_Jj = ad_matrix(J.col(j));
+            double tr_sum = 0.0;
+            for (int i = 0; i < j; ++i) {
+                // H^{(j)}[:, i] = − ad_{J_j} J_i
+                const Vector6d hij = -(ad_Jj * J.col(i));
+                // Trace(H^{(j)} J†) contributes row i of J† dotted with column i of H^{(j)}
+                tr_sum += Jdagger.row(i).dot(hij);
+            }
+            grad(j) = w * tr_sum; // accumulated sign already in hij
+        }
+
+        return grad; // 1×n as VectorXd
+    }
+
+    // Convenience overload: compute J_b via PoE and then its manipulability gradient.
+    static VectorXd ManipulabilityGradient(const ScrewList& screws, const VectorXd& theta_list, double lambda = 0.0) {
+        MatrixXd Jb = Jacob(screws, theta_list); // 6×n body/end-effector Jacobian
+        return ManipulabilityGradient(Jb, lambda);
+    }
+
 
     /* Pose preprocessing */
     static PosQuat PosQuatOutlierRemoval(const PosQuat& current_pos_quat, double std_thresh, std::deque<Vector6d>& buffer, std::size_t window_size) {
