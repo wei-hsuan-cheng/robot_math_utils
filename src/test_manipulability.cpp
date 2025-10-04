@@ -164,8 +164,10 @@ int main(int argc, char** argv) {
 
     if (time_count > 0) {
         std::cout << "Average runtime over " << time_count << " trials:\n"
-                  << "  ManipulabilityGradient(J):   " << (sum_us_gradJ / time_count) << " us\n"
-                  << "  ManipulabilityGradient(PoE): " << (sum_us_gradPoe / time_count) << " us\n";
+                  << "  Time/Rate for ManipulabilityGradient(J):   " << (sum_us_gradJ / time_count) << " [us] ("
+                  << 1e6 / (sum_us_gradJ / time_count) << " [Hz])\n"
+                  << "  Time/Rate for ManipulabilityGradient(PoE): " << (sum_us_gradPoe / time_count) << " [us] ("
+                  << 1e6 / (sum_us_gradPoe / time_count) << " [Hz])\n";
     }
 
     rclcpp::shutdown();
