@@ -89,6 +89,7 @@ ros2 run robot_math_utils robot_math_utils_test
 ros2 run robot_math_utils transform_time_analysis
 ros2 run robot_math_utils test_fk
 ros2 run robot_math_utils test_ik
+ros2 run robot_math_utils test_manipulability
 ```
 
 ## Functions Overview

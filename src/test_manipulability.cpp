@@ -25,6 +25,13 @@ static double central_diff_w(const ScrewList& screws, const Eigen::VectorXd& the
     return (wp - wm) / (2.0 * h);
 }
 
+// Per-call timing helper
+using HighResClock = std::chrono::high_resolution_clock;
+static inline double elapsedUs(const HighResClock::time_point& t0,
+                               const HighResClock::time_point& t1) {
+    return std::chrono::duration<double, std::micro>(t1 - t0).count();
+}
+
 int main(int argc, char** argv) {
     // ROS 2 init
     rclcpp::init(argc, argv);
@@ -69,6 +76,11 @@ int main(int argc, char** argv) {
     Eigen::VectorXd mean = Eigen::VectorXd::Zero(n);
     Eigen::MatrixXd cov  = (M_PI/8.0) * Eigen::VectorXd::Ones(n).asDiagonal();
 
+    // Accumulators for average runtime over num_trials
+    double sum_us_gradJ = 0.0;
+    double sum_us_gradPoe = 0.0;
+    int time_count = 0;
+
     for (int trial = 0; trial < num_trials; ++trial) {
         // Sample a configuration and avoid singular ones
         Eigen::VectorXd theta = RM::RandNorDistVec(mean, cov);
@@ -79,8 +91,17 @@ int main(int argc, char** argv) {
         }
 
         double w = RM::ManipulabilityIndex(J);
+        // Measure per-call wall time for the two gradient variants
+        auto t0 = HighResClock::now();
         Eigen::VectorXd grad = RM::ManipulabilityGradient(J);                 // from J directly
-        Eigen::VectorXd grad_poe = RM::ManipulabilityGradient(screws, theta); // PoE overload
+        auto t1 = HighResClock::now();
+        Eigen::VectorXd grad_poe;
+        auto t2 = HighResClock::now();
+        grad_poe = RM::ManipulabilityGradient(screws, theta);                 // PoE overload
+        auto t3 = HighResClock::now();
+        sum_us_gradJ   += elapsedUs(t0, t1);
+        sum_us_gradPoe += elapsedUs(t2, t3);
+        ++time_count;
 
         // std::cout << "\n[Trial " << (trial+1) << "] w = " << w << "\n";
 
@@ -140,6 +161,12 @@ int main(int argc, char** argv) {
     std::cout << "Successful trials: " << success_count << "/" << num_trials << " ("
               << (static_cast<double>(success_count) / static_cast<double>(num_trials) * 100.0)
               << "%)\n";
+
+    if (time_count > 0) {
+        std::cout << "Average runtime over " << time_count << " trials:\n"
+                  << "  ManipulabilityGradient(J):   " << (sum_us_gradJ / time_count) << " us\n"
+                  << "  ManipulabilityGradient(PoE): " << (sum_us_gradPoe / time_count) << " us\n";
+    }
 
     rclcpp::shutdown();
     return 0;
