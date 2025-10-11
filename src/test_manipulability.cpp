@@ -1,5 +1,6 @@
+// New version using object-oriented RobotKinematics API
 #include <rclcpp/rclcpp.hpp>
-#include "robot_math_utils/robot_math_utils_v1_16.hpp"
+#include "robot_kinematics_utils/robot_kinematics_utils_v1_0.hpp"
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -8,28 +9,27 @@
 #include <cmath>
 #include <chrono>
 
-using RM = RMUtils;
+using RM = RMUtils;                // keep access to RM helpers (random, etc.)
+using HighResClock = std::chrono::high_resolution_clock;
 
-// Finite-difference derivative for a scalar function of joints using central difference
-static double central_diff_w(const ScrewList& screws, const Eigen::VectorXd& theta,
+static inline double elapsedUs(const HighResClock::time_point& t0,
+                               const HighResClock::time_point& t1) {
+    return std::chrono::duration<double, std::micro>(t1 - t0).count();
+}
+
+// Central difference for w(θ) via RobotKinematics
+static double central_diff_w(const RobotKinematics& rk, const Eigen::VectorXd& theta,
                              int j, double h)
 {
     Eigen::VectorXd tp = theta;
     Eigen::VectorXd tm = theta;
     tp(j) += h;
     tm(j) -= h;
-    Eigen::MatrixXd Jp = RM::Jacob(screws, tp);
-    Eigen::MatrixXd Jm = RM::Jacob(screws, tm);
-    double wp = RM::ManipulabilityIndex(Jp);
-    double wm = RM::ManipulabilityIndex(Jm);
+    Eigen::MatrixXd Jp = rk.Jacob(tp);
+    Eigen::MatrixXd Jm = rk.Jacob(tm);
+    double wp = RobotKinematics::ManipulabilityIndex(Jp);
+    double wm = RobotKinematics::ManipulabilityIndex(Jm);
     return (wp - wm) / (2.0 * h);
-}
-
-// Per-call timing helper
-using HighResClock = std::chrono::high_resolution_clock;
-static inline double elapsedUs(const HighResClock::time_point& t0,
-                               const HighResClock::time_point& t1) {
-    return std::chrono::duration<double, std::micro>(t1 - t0).count();
 }
 
 int main(int argc, char** argv) {
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
         dh_table.setMeta(robot_name, base_frame, ee_frame, jnames, jl);
     }
 
-    ScrewList screws = RM::ScrewListFromDH(dh_table);
+    RobotKinematics rk(dh_table);
 
     // Random test configurations (skip near singular ones)
     const int num_trials = 1000;
@@ -84,60 +84,44 @@ int main(int argc, char** argv) {
     for (int trial = 0; trial < num_trials; ++trial) {
         // Sample a configuration and avoid singular ones
         Eigen::VectorXd theta = RM::RandNorDistVec(mean, cov);
-        Eigen::MatrixXd J = RM::Jacob(screws, theta);
-        if (RM::NearSingular(J, near_sing_thresh)) {
+        Eigen::MatrixXd J = rk.Jacob(theta);
+        if (RobotKinematics::NearSingular(J, near_sing_thresh)) {
             --trial; // resample
             continue;
         }
 
-        double w = RM::ManipulabilityIndex(J);
+        double w = RobotKinematics::ManipulabilityIndex(J);
+
         // Measure per-call wall time for the two gradient variants
         auto t0 = HighResClock::now();
-        Eigen::VectorXd grad = RM::ManipulabilityGradient(J);                 // from J directly
+        Eigen::VectorXd grad = RobotKinematics::ManipulabilityGradient(J);    // from J directly
         auto t1 = HighResClock::now();
-        Eigen::VectorXd grad_poe;
+        Eigen::VectorXd grad_poe = rk.ManipulabilityGradient(theta);   // PoE overload
         auto t2 = HighResClock::now();
-        grad_poe = RM::ManipulabilityGradient(screws, theta);                 // PoE overload
-        auto t3 = HighResClock::now();
         sum_us_gradJ   += elapsedUs(t0, t1);
-        sum_us_gradPoe += elapsedUs(t2, t3);
+        sum_us_gradPoe += elapsedUs(t1, t2);
         ++time_count;
-
-        // std::cout << "\n[Trial " << (trial+1) << "] w = " << w << "\n";
-
-        // // Check consistency of the two implementations
-        // double impl_diff = (grad - grad_poe).norm();
-        // std::cout << "  impl diff ‖grad(J) - grad(screws,θ)‖ = " << impl_diff << "\n";
 
         // Per-joint finite-difference check
         double max_abs_err = 0.0;
         double max_rel_err = 0.0;
         for (int j = 0; j < n; ++j) {
-            double num = central_diff_w(screws, theta, j, h);
+            double num = central_diff_w(rk, theta, j, h);
             double ana = grad(j);
             double abs_err = std::abs(ana - num);
             double denom = std::max(1e-12, std::abs(num));
             double rel_err = abs_err / denom;
             max_abs_err = std::max(max_abs_err, abs_err);
             max_rel_err = std::max(max_rel_err, rel_err);
-
-            // std::cout << "    j=" << j+1
-            //           << ":  grad(j) = " << ana
-            //           << ",  num ≈ " << num
-            //           << ",  abs err = " << abs_err
-            //           << ",  rel err = " << rel_err << "\n";
-
         }
 
         const bool pass = (max_rel_err < rel_tol) || (max_abs_err < abs_tol);
-        // std::cout << "  Summary: max_abs_err=" << max_abs_err
-        //           << ", max_rel_err=" << max_rel_err
-        //           << "  => " << (pass ? "[PASS]" : "[FAIL]") << "\n";
+        (void)pass; // retained for future use
 
         // Random small perturbation check: Δw ≈ grad · Δθ
         Eigen::VectorXd dtheta = RM::RandNorDistVec(mean, cov) * h; // tiny step
-        Eigen::MatrixXd Jp = RM::Jacob(screws, theta + dtheta);
-        double w_plus = RM::ManipulabilityIndex(Jp);
+        Eigen::MatrixXd Jp = rk.Jacob(theta + dtheta);
+        double w_plus = RobotKinematics::ManipulabilityIndex(Jp);
         double dw_num = w_plus - w;
         double dw_lin = grad.dot(dtheta);
         double abs_err_dw = std::abs(dw_lin - dw_num);
@@ -148,13 +132,10 @@ int main(int argc, char** argv) {
             ++success_count;
         } else {
             std::cout << "  [WARNING] Finite-difference perturbation check failed!\n";
-
             std::cout << "  Δw (num)=" << dw_num << ",  grad·Δθ=" << dw_lin
                       << ",  abs err=" << abs_err_dw
-                      << ",  rel err=" << rel_err_dw << "\n";        
-            std::cout << "  Δw ≈ grad · Δθ => " << (pass_dw ? "[PASS]" : "[FAIL]") << "\n";
+                      << ",  rel err=" << rel_err_dw << "\n";
         }
-        
     }
 
     std::cout << "\n===== All tests done =====\n";
