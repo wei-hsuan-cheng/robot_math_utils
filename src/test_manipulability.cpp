@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
         auto t1 = HighResClock::now();
         
         double w = rk.manipulability(); // w(k) 
-        VectorXd dw_dq = rk.manipulabilityGradient(); // dw_dq(k)
+        VectorXd dw_dq = rk.manipulability_gradient(); // dw_dq(k)
 
         auto t2 = HighResClock::now();
         VectorXd dw_dq_from_J = RK::ManipulabilityGradient(rk.jacob()); // from J directly

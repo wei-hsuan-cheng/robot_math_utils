@@ -401,8 +401,8 @@ public:
     const Vector6d& twist() const { return twist_e_; }
     const MatrixXd& jacob() const { return jacob_; }
     double manipulability() const { return w_; }
-    const VectorXd& manipulabilityGradient() const { return dw_dq_; }
-    double manipulabilityVelocity() const { return wd_; }
+    const VectorXd& manipulability_gradient() const { return dw_dq_; }
+    double manipulability_velocity() const { return wd_; }
 
     // Update robot state: uses current q_/qd_
     void UpdateRobotState() {
@@ -621,6 +621,15 @@ public:
         return J_e;
     }
 
+    // Damped least-squares (DLS) pseudo-inverse Jacobian: J^{†} = Jᵀ (J Jᵀ + λ² I)^{-1}
+    inline MatrixXd JacobPinvDLS(const MatrixXd& J, double lambda_dls) const {
+        if (lambda_dls <= 0.0) {
+        return J.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(MatrixXd::Identity(J.rows(), J.rows()));
+        }
+        MatrixXd A = J * J.transpose() + (lambda_dls * lambda_dls) * MatrixXd::Identity(J.rows(), J.rows());
+        return J.transpose() * A.inverse();
+    }
+
     // Numerical inverse kinematics (IK)
     // Solve for theta_list s.t. FKPoE(screws, theta_list) ≈ target.
     // - Calculated by Jacobian in end-effector/body frame via PoE
@@ -731,7 +740,7 @@ public:
     // where H^{(j)} = ∂J_b/∂θ_j has columns: for i < j, H^{(j)}[:, i] = − ad_{J_j} J_i; else 0.
     // Notes
     //  - This uses the PoE body-Jacobian derivative identities and requires only J_b itself.
-    //  - J_b^{†} is computed via SVD by default; set lambda>0 for damped least-squares J^{†} = Jᵀ (J Jᵀ + λ² I)^{-1}.
+    //  - J_b^{†} is computed via SVD by default; set lambda>0 for DLS pinv jacob.
     //  - If J is empty or w == 0, returns zero vector of length n.
     static VectorXd ManipulabilityGradient(const MatrixXd& J, double lambda = 0.0) {
         const int m = static_cast<int>(J.rows());
