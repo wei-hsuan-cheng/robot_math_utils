@@ -78,7 +78,7 @@ cd ~/ros2_ws/src && git clone https://github.com/wei-hsuan-cheng/robot_math_util
 
 cd ~/ros2_ws && rosdep update && rosdep install --from-paths src --ignore-src -r -y
 
-cd ~/ros2_ws && colcon build --packages-select robot_math_utils && . install/setup.bash
+cd ~/ros2_ws && colcon build --symlink-install --packages-select robot_math_utils && . install/setup.bash
 ```
 
 Run the ROS 2 node for test:
