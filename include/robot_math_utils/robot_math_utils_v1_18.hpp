@@ -1059,7 +1059,7 @@ public:
 
     // 6D screw motion: generate waypoints from screw parameters
     // u_hat: screw axis direction (will be normalized)
-    // r: vector from screw axis to the TCP/origin (||r|| is the radius)
+    // r: vector from screw axis to the EE frame origin (||r|| is the radius)
     // theta: total rotation about the axis [rad]
     static std::vector<PosQuat> ScrewMotion6DPath(const PosQuat& pos_quat_b_e, const Vector3d& u_hat, const Vector3d& r, double theta, int N) {
         if (N <= 0) {
